@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - soundpool (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Pods/.symlinks/flutter/ios`)
+  - soundpool (from `Pods/.symlinks/plugins/soundpool/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Pods/.symlinks/flutter/ios
+  soundpool:
+    :path: Pods/.symlinks/plugins/soundpool/ios
+
+SPEC CHECKSUMS:
+  Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
+  soundpool: f6891e0d1bec8f1d6275d0cd153818e1b45e4bab
+
+PODFILE CHECKSUM: 70e69985f01fdaffe3180d3ae5e73472304a9371
+
+COCOAPODS: 1.4.0
