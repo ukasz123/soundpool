@@ -30,6 +30,17 @@ class Soundpool {
     return soundId;
   }
 
+  /// Prepares sound for playing
+  ///
+  /// Loads sound data from file pointed by [uri]
+  /// Returns soundId for future use in [play]
+  static Future<int> loadUri(String uri,
+      {int priority = _DEFAULT_SOUND_PRIORITY}) async {
+    int soundId = await _channel
+        .invokeMethod("loadUri", {"uri": uri, "priority": priority});
+    return soundId;
+  }
+
   /// Plays sound identified by [soundId]
   ///
   /// Returns streamId to further control playback or 0 if playing failed to

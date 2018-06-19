@@ -10,6 +10,9 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.io.FileOutputStream
+import java.net.URI
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 class SoundpoolPlugin : MethodCallHandler {
     companion object {
@@ -38,23 +41,40 @@ class SoundpoolPlugin : MethodCallHandler {
 
 
     private fun volumeSettingsForSoundId(soundId: Int): VolumeInfo =
-    volumeSettings[soundId] ?: DEFAULT_VOLUME_INFO;
+    volumeSettings[soundId] ?: DEFAULT_VOLUME_INFO
 
+    private val loadExecutor: Executor by lazy { Executors.newSingleThreadExecutor() }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
 
         when (call.method) {
             "load" -> {
-                val arguments = call.arguments as Map<String, Any>
-                val soundData = arguments["rawSound"] as ByteArray
-                val priority = arguments["priority"] as Int
-                val tempFile = createTempFile(prefix = "sound", suffix = "pool")
-                FileOutputStream(tempFile).use {
-                    it.write(soundData)
+                loadExecutor.execute {
+                    val arguments = call.arguments as Map<String, Any>
+                    val soundData = arguments["rawSound"] as ByteArray
+                    val priority = arguments["priority"] as Int
+                    val tempFile = createTempFile(prefix = "sound", suffix = "pool")
+                    FileOutputStream(tempFile).use {
+                        it.write(soundData)
+                    }
+                    tempFile.deleteOnExit()
+                    val soundId = soundPool.load(tempFile.absolutePath, priority)
+                    result.success(soundId)
                 }
-                tempFile.deleteOnExit()
-                val soundId = soundPool.load(tempFile.absolutePath, priority)
-                result.success(soundId)
+            }
+            "loadUri" -> {
+                loadExecutor.execute {
+                    val arguments = call.arguments as Map<String, Any>
+                    val soundUri = arguments["uri"] as String
+                    val priority = arguments["priority"] as Int
+                    val tempFile = createTempFile(prefix = "sound", suffix = "pool")
+                    FileOutputStream(tempFile).use {
+                        it.write(URI.create(soundUri).toURL().readBytes())
+                    }
+                    tempFile.deleteOnExit()
+                    val soundId = soundPool.load(tempFile.absolutePath, priority)
+                    result.success(soundId)
+                }
             }
             "release" -> {
                 soundPool.release()
