@@ -58,6 +58,7 @@ class SoundpoolPlugin : MethodCallHandler {
             }
             "release" -> {
                 soundPool.release()
+                result.success(null)
             }
             "play" -> {
                 val arguments = call.arguments as Map<String, Int>
@@ -98,6 +99,7 @@ class SoundpoolPlugin : MethodCallHandler {
                     volumeSettings[it] = VolumeInfo(left = volumeLeft.toFloat(), right =
                     volumeRight.toFloat())
                 }
+                result.success(null)
             }
             else -> result.notImplemented()
         }

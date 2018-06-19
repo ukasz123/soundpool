@@ -66,12 +66,13 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             audioPlayer = playerBySoundId(soundId: soundId!)
         }
         audioPlayer?.volume = Float(volume)
-        
+        result(nil)
     case "release":
         for audioPlayer in soundpool {
             audioPlayer.stop()
         }
         soundpool.removeAll()
+        result(nil)
     default:
         result("notImplemented")
     }
