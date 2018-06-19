@@ -14,6 +14,8 @@ class _MyAppState extends State<MyApp> {
 
   int dicesStreamId;
 
+  int dicesSoundFromUriId;
+
   double volume = 1.0;
 
   @override
@@ -29,27 +31,42 @@ class _MyAppState extends State<MyApp> {
         appBar: new AppBar(
           title: new Text('Soundpool plugin example app'),
         ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        body: new Stack(
           children: <Widget>[
-            new Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: new Text('Volume control'),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                new Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: new Text('Volume control'),
+                ),
+                new Slider(
+                    value: volume,
+                    onChanged: (newValue) {
+                      setState(() {
+                        volume = newValue;
+                        updateVolume();
+                      });
+                    }),
+              ],
             ),
-            new Slider(
-                value: volume,
-                onChanged: (newValue) {
-                  setState(() {
-                    volume = newValue;
-                    updateVolume();
-                  });
-                }),
+            new Positioned(
+                bottom: 16.0,
+                left: 16.0,
+                child: new FloatingActionButton(
+                  onPressed:
+                      dicesSoundFromUriId == null || dicesSoundFromUriId < 0
+                          ? null
+                          : () => playSoundFromUri(),
+                  child: new Icon(Icons.play_arrow),
+                ))
           ],
         ),
         floatingActionButton: new FloatingActionButton(
-            onPressed: () => playSound(),
-            child: new Icon(Icons.play_circle_filled)),
+          onPressed: () => playSound(),
+          child: new Icon(Icons.play_circle_filled),
+        ),
       ),
     );
   }
@@ -60,6 +77,11 @@ class _MyAppState extends State<MyApp> {
       return Soundpool.load(soundData);
     });
     await Soundpool.setVolume(soundId: dicesSoundId, volume: volume);
+    dicesSoundFromUriId = await Soundpool.loadUri(
+        "https://github.com/ukasz123/soundpool/raw/master/example/sounds/dices.m4a");
+    print(
+        "dicesSoundId = $dicesSoundId, dicesSoundFromUri = $dicesSoundFromUriId");
+    setState(() {});
   }
 
   void playSound() async {
@@ -75,5 +97,9 @@ class _MyAppState extends State<MyApp> {
     } else {
       Soundpool.setVolume(soundId: dicesSoundId, volume: volume);
     }
+  }
+
+  void playSoundFromUri() {
+    Soundpool.play(dicesSoundFromUriId);
   }
 }

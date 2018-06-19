@@ -25,6 +25,24 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         } catch {
             result(-1)
         }
+    case "loadUri":
+        let attributes = call.arguments as! NSDictionary
+        let soundUri = attributes["uri"] as! String
+        do {
+            let url = URL(string: soundUri)
+            if (url != nil){
+                let cachedSound = try Data(contentsOf: url!)
+                let audioPlayer = try AVAudioPlayer(data: cachedSound)
+                audioPlayer.prepareToPlay()
+                let index = soundpool.count
+                soundpool.append(audioPlayer)
+                result(index)
+            } else {
+                result(-1)
+            }
+        } catch {
+            result(-1)
+        }
     case "play":
         let attributes = call.arguments as! NSDictionary
         let soundId = attributes["soundId"] as! Int
@@ -66,12 +84,13 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             audioPlayer = playerBySoundId(soundId: soundId!)
         }
         audioPlayer?.volume = Float(volume)
-        
+        result(nil)
     case "release":
         for audioPlayer in soundpool {
             audioPlayer.stop()
         }
         soundpool.removeAll()
+        result(nil)
     default:
         result("notImplemented")
     }
