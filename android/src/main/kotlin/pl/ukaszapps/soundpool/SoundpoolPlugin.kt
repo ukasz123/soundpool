@@ -27,17 +27,19 @@ class SoundpoolPlugin : MethodCallHandler {
         private val DEFAULT_VOLUME_INFO = VolumeInfo()
     }
 
-    private val soundPool by lazy {
-        return@lazy if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            SoundPool.Builder().setAudioAttributes(AudioAttributes.Builder().setLegacyStreamType
-            (AudioManager.STREAM_MUSIC).setUsage(AudioAttributes.USAGE_GAME).build())
-                    .build()
-        } else {
-            SoundPool(1, AudioManager.STREAM_MUSIC, 1)
-        }
+    private var soundPool = createSoundpool()
+
+
+    private fun createSoundpool() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        SoundPool.Builder().setAudioAttributes(AudioAttributes.Builder().setLegacyStreamType
+        (AudioManager.STREAM_MUSIC).setUsage(AudioAttributes.USAGE_GAME).build())
+                .build()
+    } else {
+        SoundPool(1, AudioManager.STREAM_MUSIC, 1)
     }
 
     private val volumeSettings = mutableMapOf<Int, VolumeInfo>()
+
 
 
     private fun volumeSettingsForSoundId(soundId: Int): VolumeInfo =
@@ -78,6 +80,7 @@ class SoundpoolPlugin : MethodCallHandler {
             }
             "release" -> {
                 soundPool.release()
+                soundPool = createSoundpool()
                 result.success(null)
             }
             "play" -> {

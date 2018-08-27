@@ -30,7 +30,17 @@ class _MyAppState extends State<MyApp> {
       home: new Scaffold(
         appBar: new AppBar(
           title: new Text('Soundpool plugin example app'),
+          actions: <Widget>[
+            new IconButton(
+              icon: Icon(Icons.clear_all),
+              tooltip: "Releases all sounds",
+              onPressed: () {
+                resetSoundpool();
+              },
+            )
+          ],
         ),
+
         body: new Stack(
           children: <Widget>[
             Column(
@@ -56,7 +66,7 @@ class _MyAppState extends State<MyApp> {
                 left: 16.0,
                 child: new FloatingActionButton(
                   onPressed:
-                      dicesSoundFromUriId == null || dicesSoundFromUriId < 0
+                      dicesSoundFromUriId == null || dicesSoundFromUriId <= 0
                           ? null
                           : () => playSoundFromUri(),
                   child: new Icon(Icons.play_arrow),
@@ -64,7 +74,8 @@ class _MyAppState extends State<MyApp> {
           ],
         ),
         floatingActionButton: new FloatingActionButton(
-          onPressed: () => playSound(),
+
+          onPressed: dicesSoundId != null && dicesSoundId > 0 ?  playSound : null,
           child: new Icon(Icons.play_circle_filled),
         ),
       ),
@@ -101,5 +112,15 @@ class _MyAppState extends State<MyApp> {
 
   void playSoundFromUri() {
     Soundpool.play(dicesSoundFromUriId);
+  }
+
+  void resetSoundpool() async {
+    setState((){
+      dicesSoundId = -1;
+      dicesSoundFromUriId = -1;
+    });
+    Soundpool.release().then((_){
+      initSoundPool();
+    });
   }
 }
