@@ -13,6 +13,9 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
+    case "initSoundpool":
+        // TODO create distinction between different types of audio playback
+        result(1)
     case "load":
         let attributes = call.arguments as! NSDictionary
         let rawSound = attributes["rawSound"] as! FlutterStandardTypedData
@@ -85,7 +88,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         }
         audioPlayer?.volume = Float(volume)
         result(nil)
-    case "release":
+    case "release", "dispose": // TODO this should distinguish between soundpools for different types of audio playbacks
         for audioPlayer in soundpool {
             audioPlayer.stop()
         }

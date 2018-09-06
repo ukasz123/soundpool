@@ -11,3 +11,5 @@ pubspec.lock
 *.iml
 doc/
 **/local.properties
+
+node_modules
