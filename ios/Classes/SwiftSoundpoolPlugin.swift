@@ -8,16 +8,39 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
     let instance = SwiftSoundpoolPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
+    private lazy var wrappers = [SwiftSoundpoolPlugin.SoundpoolWrapper]()
     
-    private lazy var soundpool = [AVAudioPlayer]()
-
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        switch call.method {
+        case "initSoundpool":
+            // TODO create distinction between different types of audio playback
+            let wrapper = SoundpoolWrapper()
+            let index = wrappers.count
+            wrappers.append(wrapper)
+            result(index)
+        case "dispose":
+            let attributes = call.arguments as! NSDictionary
+            let index = attributes["poolId"] as! Int
+            let wrapper = wrappers[index]
+            wrapper.stopAllStreams()
+            wrappers.remove(at: index)
+            result(nil)
+        default:
+            let attributes = call.arguments as! NSDictionary
+            let index = attributes["poolId"] as! Int
+            let wrapper = wrappers[index]
+            wrapper.handle(call, result: result)
+        }
+        
+    }
+    
+    class SoundpoolWrapper : NSObject {
+        
+        private lazy var soundpool = [AVAudioPlayer]()
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    let attributes = call.arguments as! NSDictionary
     switch call.method {
-    case "initSoundpool":
-        // TODO create distinction between different types of audio playback
-        result(1)
     case "load":
-        let attributes = call.arguments as! NSDictionary
         let rawSound = attributes["rawSound"] as! FlutterStandardTypedData
         do {
         let audioPlayer = try AVAudioPlayer(data: rawSound.data)
@@ -29,7 +52,6 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             result(-1)
         }
     case "loadUri":
-        let attributes = call.arguments as! NSDictionary
         let soundUri = attributes["uri"] as! String
         do {
             let url = URL(string: soundUri)
@@ -47,7 +69,6 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             result(-1)
         }
     case "play":
-        let attributes = call.arguments as! NSDictionary
         let soundId = attributes["soundId"] as! Int
         let times = attributes["repeat"] as? Int
         let audioPlayer = playerBySoundId(soundId: soundId)
@@ -60,13 +81,11 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             result(0) // failed to play sound
         }
     case "pause":
-        let attributes = call.arguments as! NSDictionary
         let streamId = attributes["streamId"] as! Int
         let audioPlayer = playerByStreamId(streamId: streamId)
         audioPlayer.pause()
         result(streamId)
     case "stop":
-        let attributes = call.arguments as! NSDictionary
         let streamId = attributes["streamId"] as! Int
         let audioPlayer = playerByStreamId(streamId: streamId)
         audioPlayer.stop()
@@ -75,7 +94,6 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         audioPlayer.currentTime = 0.0
         audioPlayer.prepareToPlay()
     case "setVolume":
-        let attributes = call.arguments as! NSDictionary
         let streamId = attributes["streamId"] as? Int
         let soundId = attributes["soundId"] as? Int
         let volume = attributes["volumeLeft"] as! Double
@@ -88,10 +106,8 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         }
         audioPlayer?.volume = Float(volume)
         result(nil)
-    case "release", "dispose": // TODO this should distinguish between soundpools for different types of audio playbacks
-        for audioPlayer in soundpool {
-            audioPlayer.stop()
-        }
+    case "release": // TODO this should distinguish between soundpools for different types of audio playbacks
+        stopAllStreams()
         soundpool.removeAll()
         result(nil)
     default:
@@ -99,6 +115,11 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
     }
   }
     
+        func stopAllStreams() {
+            for audioPlayer in soundpool {
+                audioPlayer.stop()
+            }
+        }
     private func playerByStreamId(streamId: Int) -> AVAudioPlayer {
         // converting streamId to index
         let audioPlayer = soundpool[streamId-1]
@@ -110,3 +131,5 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         return audioPlayer
     }
 }
+}
+
