@@ -27,7 +27,7 @@ class Soundpool {
   /// load(await rootBundle.load("sounds/dices.m4a")); // loads file
   /// from assets
   ///
-  /// Returns soundId for future use in [play]
+  /// Returns soundId for future use in [play] (soundId > -1)
   Future<int> load(ByteData rawSound,
           {int priority = _DEFAULT_SOUND_PRIORITY}) =>
       loadUint8List(rawSound.buffer.asUint8List(), priority: priority);
@@ -35,7 +35,8 @@ class Soundpool {
   /// Prepares sound for playing
   ///
   /// Loads sound data and buffers it for future playing.
-  /// Returns soundId for future use in [play]
+  ///
+  /// Returns soundId for future use in [play] (soundId > -1)
   Future<int> loadUint8List(Uint8List rawSound,
       {int priority = _DEFAULT_SOUND_PRIORITY}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
@@ -48,7 +49,7 @@ class Soundpool {
   /// Prepares sound for playing
   ///
   /// Loads sound data from file pointed by [uri]
-  /// Returns soundId for future use in [play]
+  /// Returns soundId for future use in [play] (soundId > -1)
   Future<int> loadUri(String uri,
       {int priority = _DEFAULT_SOUND_PRIORITY}) async {
     assert(!_disposed, "Soundpool instance was already disposed");

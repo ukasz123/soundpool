@@ -47,7 +47,7 @@ class _MyAppState extends State<MyApp> {
         floatingActionButton: ready
             ? new FloatingActionButton(
                 onPressed: soundsMap[_selectedPool].dicesSoundId != null &&
-                        soundsMap[_selectedPool].dicesSoundId > 0
+                        soundsMap[_selectedPool].dicesSoundId >= 0
                     ? playSound
                     : null,
                 child: new Icon(Icons.play_circle_filled),
@@ -87,7 +87,7 @@ class _MyAppState extends State<MyApp> {
             left: 16.0,
             child: new FloatingActionButton(
               onPressed: soundsMap[_selectedPool].dicesSoundFromUriId == null ||
-                      soundsMap[_selectedPool].dicesSoundFromUriId <= 0
+                      soundsMap[_selectedPool].dicesSoundFromUriId < 0
                   ? null
                   : () => playSoundFromUri(),
               child: new Icon(Icons.play_arrow),
