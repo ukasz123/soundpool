@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:soundpool/soundpool.dart';
 
@@ -10,22 +12,22 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  int dicesSoundId;
-
-  int dicesStreamId;
-
-  int dicesSoundFromUriId;
-
-  double volume = 1.0;
+  List<Soundpool> soundpools = [];
+  Map<Soundpool, SoundsMap> soundsMap;
+  Soundpool _selectedPool;
+  int _selectedIndex = 0;
 
   @override
   initState() {
     super.initState();
-    initSoundPool();
+    initSoundPools();
   }
 
   @override
   Widget build(BuildContext context) {
+    final ready = (soundpools.length > 0) && _selectedPool != null;
+    final Widget body =
+        ready ? _buildReadyWidget(context) : _buildWaitingWidget(context);
     return new MaterialApp(
       home: new Scaffold(
         appBar: new AppBar(
@@ -40,87 +42,164 @@ class _MyAppState extends State<MyApp> {
             )
           ],
         ),
-
-        body: new Stack(
-          children: <Widget>[
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                new Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: new Text('Volume control'),
-                ),
-                new Slider(
-                    value: volume,
-                    onChanged: (newValue) {
-                      setState(() {
-                        volume = newValue;
-                        updateVolume();
-                      });
-                    }),
-              ],
-            ),
-            new Positioned(
-                bottom: 16.0,
-                left: 16.0,
-                child: new FloatingActionButton(
-                  onPressed:
-                      dicesSoundFromUriId == null || dicesSoundFromUriId <= 0
-                          ? null
-                          : () => playSoundFromUri(),
-                  child: new Icon(Icons.play_arrow),
-                ))
-          ],
-        ),
-        floatingActionButton: new FloatingActionButton(
-
-          onPressed: dicesSoundId != null && dicesSoundId > 0 ?  playSound : null,
-          child: new Icon(Icons.play_circle_filled),
-        ),
+        bottomNavigationBar: _buildBottomNavigationBar(context),
+        body: body,
+        floatingActionButton: ready
+            ? new FloatingActionButton(
+                onPressed: soundsMap[_selectedPool].dicesSoundId != null &&
+                        soundsMap[_selectedPool].dicesSoundId >= 0
+                    ? playSound
+                    : null,
+                child: new Icon(Icons.play_circle_filled),
+              )
+            : null,
       ),
     );
   }
 
-  void initSoundPool() async {
-    dicesSoundId =
-        await rootBundle.load("sounds/dices.m4a").then((ByteData soundData) {
-      return Soundpool.load(soundData);
+  Stack _buildReadyWidget(BuildContext context) {
+    return new Stack(
+      children: <Widget>[
+        Positioned(
+          top: 8.0,
+          child: Text(_selectedPool.streamType.toString()),
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            new Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: new Text('Volume control'),
+            ),
+            new Slider(
+                value: soundsMap[_selectedPool].volume,
+                onChanged: (newValue) {
+                  setState(() {
+                    soundsMap[_selectedPool].volume = newValue;
+                    updateVolume();
+                  });
+                }),
+          ],
+        ),
+        new Positioned(
+            bottom: 16.0,
+            left: 16.0,
+            child: new FloatingActionButton(
+              onPressed: soundsMap[_selectedPool].dicesSoundFromUriId == null ||
+                      soundsMap[_selectedPool].dicesSoundFromUriId < 0
+                  ? null
+                  : () => playSoundFromUri(),
+              child: new Icon(Icons.play_arrow),
+            ))
+      ],
+    );
+  }
+
+  void initSoundPools() {
+    soundpools =
+        StreamType.values.map((type) => Soundpool(streamType: type)).toList();
+
+    soundsMap = Map.fromEntries(
+        soundpools.map((soundpool) => MapEntry(soundpool, SoundsMap())));
+    print("Waiting for all pools to initialize themself");
+    Future.wait(
+            soundpools.map((pool) => initSoundsForPool(pool, soundsMap[pool])))
+        .then((_) {
+      setState(() {
+        _selectedPool = soundpools[_selectedIndex];
+      });
     });
-    await Soundpool.setVolume(soundId: dicesSoundId, volume: volume);
-    dicesSoundFromUriId = await Soundpool.loadUri(
-        "https://github.com/ukasz123/soundpool/raw/master/example/sounds/dices.m4a");
-    print(
-        "dicesSoundId = $dicesSoundId, dicesSoundFromUri = $dicesSoundFromUriId");
-    setState(() {});
   }
 
   void playSound() async {
-    if (dicesSoundId > -1) {
-      dicesStreamId = await Soundpool.play(dicesSoundId, repeat: 4);
+    if (soundsMap[_selectedPool].dicesSoundId > -1) {
+      soundsMap[_selectedPool].dicesStreamId = await _selectedPool
+          .play(soundsMap[_selectedPool].dicesSoundId, repeat: 4);
     }
   }
 
   void updateVolume() {
-    if (dicesStreamId != null) {
-      Soundpool.setVolume(
-          streamId: dicesStreamId, soundId: dicesSoundId, volume: volume);
+    if (soundsMap[_selectedPool].dicesStreamId != null) {
+      _selectedPool.setVolume(
+          streamId: soundsMap[_selectedPool].dicesStreamId,
+          soundId: soundsMap[_selectedPool].dicesSoundId,
+          volume: soundsMap[_selectedPool].volume);
     } else {
-      Soundpool.setVolume(soundId: dicesSoundId, volume: volume);
+      _selectedPool.setVolume(
+          soundId: soundsMap[_selectedPool].dicesSoundId,
+          volume: soundsMap[_selectedPool].volume);
     }
   }
 
   void playSoundFromUri() {
-    Soundpool.play(dicesSoundFromUriId);
+    _selectedPool.play(soundsMap[_selectedPool].dicesSoundFromUriId);
   }
 
   void resetSoundpool() async {
-    setState((){
-      dicesSoundId = -1;
-      dicesSoundFromUriId = -1;
+    setState(() {
+      soundsMap[_selectedPool].dicesSoundId = -1;
+      soundsMap[_selectedPool].dicesSoundFromUriId = -1;
     });
-    Soundpool.release().then((_){
-      initSoundPool();
+    _selectedPool.dispose();
+    initSoundsForPool(_selectedPool, soundsMap[_selectedPool]).then((_) {
+      setState(() {});
     });
   }
+
+  _buildBottomNavigationBar(BuildContext context) {
+    if (soundpools.length > 1) {
+      return BottomNavigationBar(
+        items: soundpools
+            .map((s) => s.streamType)
+            .map((streamType) => BottomNavigationBarItem(
+                backgroundColor: Colors.lightBlueAccent,
+                icon: Icon(Icons.pages),
+                title: Text(streamType.toString())))
+            .toList(),
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+            _selectedPool = soundpools[_selectedIndex];
+          });
+        },
+      );
+    } else {
+      return new Container(
+        height: 40.0,
+        child: Center(
+          child: Text("Loading soundpools"),
+        ),
+      );
+    }
+  }
+
+  Widget _buildWaitingWidget(BuildContext context) {
+    return Center(child: CircularProgressIndicator());
+  }
+
+  Future<Null> initSoundsForPool(Soundpool pool, SoundsMap sounds) async {
+    print("Loading sounds for pool ${pool.streamType}...");
+    sounds.dicesSoundId =
+        await rootBundle.load("sounds/dices.m4a").then((ByteData soundData) {
+      return pool.load(soundData);
+    });
+    await pool.setVolume(soundId: sounds.dicesSoundId, volume: sounds.volume);
+    sounds.dicesSoundFromUriId = await pool.loadUri(
+        "https://github.com/ukasz123/soundpool/raw/master/example/sounds/dices.m4a");
+    print(
+        "stream = ${pool.streamType}: dicesSoundId = ${sounds.dicesSoundId}, dicesSoundFromUri = ${sounds.dicesSoundFromUriId}");
+    return;
+  }
+}
+
+class SoundsMap {
+  int dicesSoundId;
+
+  int dicesStreamId;
+
+  int dicesSoundFromUriId;
+
+  double volume = 1.0;
 }

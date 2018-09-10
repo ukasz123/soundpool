@@ -23,31 +23,85 @@ class SoundpoolPlugin : MethodCallHandler {
         }
 
         private const val CHANNEL_NAME = "pl.ukaszapps/soundpool"
+    }
+    private val wrappers : MutableList<SoundpoolWrapper> = mutableListOf()
+
+    override fun onMethodCall(call: MethodCall, result: Result) {
+        when (call.method) {
+            "initSoundpool" -> {
+                val arguments = call.arguments as Map<String, Int>
+                val streamTypeIndex = arguments["streamType"]
+                val streamType = when(streamTypeIndex){
+                    0 -> AudioManager.STREAM_RING
+                    1 -> AudioManager.STREAM_ALARM
+                    2 -> AudioManager.STREAM_MUSIC
+                    3 -> AudioManager.STREAM_NOTIFICATION
+                    else -> -1
+                }
+                if (streamType > -1){
+                    val wrapper = SoundpoolWrapper(streamType)
+                    val index = wrappers.size
+                    wrappers.add(wrapper)
+                    result.success(index)
+                } else {
+                    result.success(-1)
+                }
+            }
+            "dispose" -> {
+                val arguments = call.arguments as Map<String, Int>
+                val poolIndex = arguments["poolId"]!!
+                wrappers[poolIndex].releaseSoundpool()
+                wrappers.removeAt(poolIndex)
+                result.success(null)
+            }
+            else -> {
+                val arguments = call.arguments as Map<String, Any>
+                val poolIndex = arguments["poolId"] as Int
+                wrappers[poolIndex].onMethodCall(call, result)
+            }
+        }
+    }
+}
+
+internal data class VolumeInfo(val left: Float = 1.0f, val right: Float = 1.0f);
+
+/**
+ * Wraps Soundpool instance and handles instance-level method calls
+ */
+internal class SoundpoolWrapper (private val streamType: Int) {
+    companion object {
 
         private val DEFAULT_VOLUME_INFO = VolumeInfo()
+
+        private val loadExecutor: Executor by lazy { Executors.newCachedThreadPool() }
     }
 
     private var soundPool = createSoundpool()
 
 
     private fun createSoundpool() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        val usage = when(streamType){
+            AudioManager.STREAM_RING -> AudioAttributes.USAGE_NOTIFICATION_RINGTONE
+            AudioManager.STREAM_ALARM -> android.media.AudioAttributes.USAGE_ALARM
+            AudioManager.STREAM_NOTIFICATION -> android.media.AudioAttributes.USAGE_NOTIFICATION
+            else -> android.media.AudioAttributes.USAGE_GAME
+        }
         SoundPool.Builder().setAudioAttributes(AudioAttributes.Builder().setLegacyStreamType
-        (AudioManager.STREAM_MUSIC).setUsage(AudioAttributes.USAGE_GAME).build())
+        (streamType)
+                .setUsage(usage)
+                .build())
                 .build()
     } else {
-        SoundPool(1, AudioManager.STREAM_MUSIC, 1)
+        SoundPool(1, streamType, 1)
     }
 
     private val volumeSettings = mutableMapOf<Int, VolumeInfo>()
 
 
-
     private fun volumeSettingsForSoundId(soundId: Int): VolumeInfo =
-    volumeSettings[soundId] ?: DEFAULT_VOLUME_INFO
+            volumeSettings[soundId] ?: DEFAULT_VOLUME_INFO
 
-    private val loadExecutor: Executor by lazy { Executors.newSingleThreadExecutor() }
-
-    override fun onMethodCall(call: MethodCall, result: Result) {
+    internal fun onMethodCall(call: MethodCall, result: Result) {
 
         when (call.method) {
             "load" -> {
@@ -66,20 +120,24 @@ class SoundpoolPlugin : MethodCallHandler {
             }
             "loadUri" -> {
                 loadExecutor.execute {
-                    val arguments = call.arguments as Map<String, Any>
-                    val soundUri = arguments["uri"] as String
-                    val priority = arguments["priority"] as Int
-                    val tempFile = createTempFile(prefix = "sound", suffix = "pool")
-                    FileOutputStream(tempFile).use {
-                        it.write(URI.create(soundUri).toURL().readBytes())
-                    }
-                    tempFile.deleteOnExit()
-                    val soundId = soundPool.load(tempFile.absolutePath, priority)
-                    result.success(soundId)
+	                try {
+		                val arguments = call.arguments as Map<String, Any>
+		                val soundUri = arguments["uri"] as String
+		                val priority = arguments["priority"] as Int
+		                val tempFile = createTempFile(prefix = "sound", suffix = "pool")
+		                FileOutputStream(tempFile).use {
+			                it.write(URI.create(soundUri).toURL().readBytes())
+		                }
+		                tempFile.deleteOnExit()
+		                val soundId = soundPool.load(tempFile.absolutePath, priority)
+		                result.success(soundId)
+	                } catch (t: Throwable){
+		                result.error("URI loading failure", t.message, t)
+	                }
                 }
             }
             "release" -> {
-                soundPool.release()
+                releaseSoundpool()
                 soundPool = createSoundpool()
                 result.success(null)
             }
@@ -127,6 +185,8 @@ class SoundpoolPlugin : MethodCallHandler {
             else -> result.notImplemented()
         }
     }
-}
 
-internal data class VolumeInfo(val left: Float = 1.0f, val right: Float = 1.0f);
+    internal fun releaseSoundpool() {
+        soundPool.release()
+    }
+}
