@@ -65,9 +65,10 @@ class Soundpool {
   /// start
   Future<int> play(int soundId, {int repeat = 0}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    return await _soundpoolId.future.then((poolId) => _channel.invokeMethod(
+    int poolId = await _soundpoolId.future;
+    return await _channel.invokeMethod(
             "play", {"poolId": poolId, "soundId": soundId, "repeat": repeat})
-        as int);
+        as int;
   }
 
   /// Sets volume for playing sound identified by [soundId] or [streamId]

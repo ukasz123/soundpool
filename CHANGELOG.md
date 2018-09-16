@@ -16,3 +16,6 @@
     * Audio stream type may be defined for Soundpool to use (_Android only_)
         * Every sound loaded for the Soundpool is played on the audio stream Soundpool instace was created with
 * Fix Android app crashing when URI is not reachable
+
+### 0.1.1 (16-09-2018)
+* Fix type cast error in play() (thanks to SpencerCornish)

@@ -1,6 +1,6 @@
 name: soundpool
 description: A Flutter Sound Pool for playing short media files
-version: 0.1.0
+version: 0.1.1
 author: Lukasz Huculak <ukasz.apps@gmail.com>
 homepage: https://github.com/ukasz123/soundpool
 

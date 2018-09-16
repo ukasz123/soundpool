@@ -114,8 +114,9 @@ class _MyAppState extends State<MyApp> {
 
   void playSound() async {
     if (soundsMap[_selectedPool].dicesSoundId > -1) {
-      soundsMap[_selectedPool].dicesStreamId = await _selectedPool
+      int streamId = soundsMap[_selectedPool].dicesStreamId = await _selectedPool
           .play(soundsMap[_selectedPool].dicesSoundId, repeat: 4);
+      print("Playing sound with stream id: $streamId");
     }
   }
 
