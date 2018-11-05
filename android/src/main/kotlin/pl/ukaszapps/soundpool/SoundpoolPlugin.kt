@@ -156,6 +156,12 @@ internal class SoundpoolWrapper (private val streamType: Int) {
                 soundPool.pause(streamId)
                 result.success(streamId)
             }
+            "resume" -> {
+                val arguments = call.arguments as Map<String, Int>
+                val streamId = arguments["streamId"]!!
+                soundPool.resume(streamId)
+                result.success(streamId)
+            }
             "stop" -> {
                 val arguments = call.arguments as Map<String, Int>
                 val streamId = arguments["streamId"]!!

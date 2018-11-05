@@ -46,11 +46,15 @@ class _MyAppState extends State<MyApp> {
         body: body,
         floatingActionButton: ready
             ? new FloatingActionButton(
-                onPressed: soundsMap[_selectedPool].dicesSoundId != null &&
-                        soundsMap[_selectedPool].dicesSoundId >= 0
-                    ? playSound
-                    : null,
-                child: new Icon(Icons.play_circle_filled),
+                onPressed: soundsMap[_selectedPool].playing
+                    ? pauseStream
+                    : soundsMap[_selectedPool].dicesSoundId != null &&
+                            soundsMap[_selectedPool].dicesSoundId >= 0
+                        ? playSound
+                        : null,
+                child: new Icon(soundsMap[_selectedPool].playing
+                    ? Icons.pause_circle_filled
+                    : Icons.play_circle_filled),
               )
             : null,
       ),
@@ -112,11 +116,29 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void playSound() async {
+  Future<void> playSound() async {
     if (soundsMap[_selectedPool].dicesSoundId > -1) {
-      int streamId = soundsMap[_selectedPool].dicesStreamId = await _selectedPool
-          .play(soundsMap[_selectedPool].dicesSoundId, repeat: 4);
-      print("Playing sound with stream id: $streamId");
+      if (soundsMap[_selectedPool].dicesStreamId != null) {
+        await _selectedPool.resume(soundsMap[_selectedPool].dicesStreamId);
+
+        soundsMap[_selectedPool].dicesStreamId = null; /**/
+      } else {
+        int streamId = soundsMap[_selectedPool].dicesStreamId =
+            await _selectedPool.play(soundsMap[_selectedPool].dicesSoundId,
+                repeat: 4);
+        soundsMap[_selectedPool].playing = true;
+        print("Playing sound with stream id: $streamId");
+      }
+    }
+    setState(() {});
+  }
+
+  Future<void> pauseStream() async {
+    if (soundsMap[_selectedPool].dicesStreamId != null) {
+      await _selectedPool.pause(soundsMap[_selectedPool].dicesStreamId);
+      setState(() {
+        soundsMap[_selectedPool].playing = false;
+      });
     }
   }
 
@@ -203,4 +225,6 @@ class SoundsMap {
   int dicesSoundFromUriId;
 
   double volume = 1.0;
+
+  bool playing = false;
 }

@@ -71,9 +71,51 @@ class Soundpool {
         as int;
   }
 
+  Future<AudioStreamControl> playWithControls(int soundId,
+      {int repeat = 0}) async {
+    final streamId = await play(soundId, repeat: repeat);
+    return AudioStreamControl._(this, streamId);
+  }
+
+  /// Stops playing sound identified by [streamId]
+  ///
+  ///
+  Future<void> stop(int streamId) async {
+    assert(!_disposed, "Soundpool instance was already disposed");
+    int poolId = await _soundpoolId.future;
+    await _channel.invokeMethod("stop", {
+      "poolId": poolId,
+      "streamId": streamId,
+    });
+  }
+
+  /// Pauses playing sound identified by [streamId]
+  ///
+  ///
+  Future<void> pause(int streamId) async {
+    assert(!_disposed, "Soundpool instance was already disposed");
+    int poolId = await _soundpoolId.future;
+    await _channel.invokeMethod("pause", {
+      "poolId": poolId,
+      "streamId": streamId,
+    });
+  }
+
+  /// Resumes playing sound identified by [streamId]
+  ///
+  ///
+  Future<void> resume(int streamId) async {
+    assert(!_disposed, "Soundpool instance was already disposed");
+    int poolId = await _soundpoolId.future;
+    await _channel.invokeMethod("resume", {
+      "poolId": poolId,
+      "streamId": streamId,
+    });
+  }
+
   /// Sets volume for playing sound identified by [soundId] or [streamId]
   ///
-  ///
+  /// At least [volume] or both [volumeLeft] and [volumeRight] have to be passed
   Future setVolume(
       {int soundId,
       int streamId,
@@ -157,4 +199,64 @@ enum StreamType {
 
   /// Audio stream for notifications
   notification
+}
+
+/// Controls for played sound
+///
+/// Utility class that wraps the stream id with a easy-to-use API
+class AudioStreamControl {
+  final Soundpool _pool;
+  bool _playing = true;
+  bool _stopped = false;
+
+  /// Id of the stream that is controlled by this object
+  final int stream;
+
+  /// Returns true if stream is not paused
+  ///
+  /// This does not reflect actual player state. The sound may have been finished
+  /// any moment before by reaching the end
+  bool get playing => _playing;
+
+  /// Returns true if stream has been stopped and cannot be resumed
+  ///
+  /// This does not reflect actual player state. The sound may have been finished
+  /// any moment before by reaching the end
+  bool get stopped => _stopped;
+
+  AudioStreamControl._(this._pool, this.stream);
+
+  /// Stops playing the stream associated with this object
+  Future<void> stop() async {
+    await _pool.stop(stream);
+    _stopped = true;
+    _playing = false;
+  }
+
+  /// Pauses playing the stream associated with this object
+  Future<void> pause() async {
+    if (!_stopped && _playing) {
+      await _pool.pause(stream);
+      _playing = false;
+    }
+  }
+
+  /// Resumes paused stream associated with this object
+  Future<void> resume() async {
+    if (!_stopped && _playing) {
+      await _pool.pause(stream);
+      _playing = true;
+    }
+  }
+
+  /// Sets volume for playing sound identified by [soundId] or [streamId]
+  ///
+  /// At least [volume] or both [volumeLeft] and [volumeRight] have to be passed
+  Future setVolume({double volume, double volumeLeft, double volumeRight}) {
+    return _pool.setVolume(
+        streamId: stream,
+        volume: volume,
+        volumeLeft: volumeLeft,
+        volumeRight: volumeRight);
+  }
 }

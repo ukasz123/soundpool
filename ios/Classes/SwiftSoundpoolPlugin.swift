@@ -71,8 +71,22 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
     case "play":
         let soundId = attributes["soundId"] as! Int
         let times = attributes["repeat"] as? Int
-        let audioPlayer = playerBySoundId(soundId: soundId)
-        audioPlayer.numberOfLoops = times ?? 0
+        var audioPlayer = playerBySoundId(soundId: soundId)
+        do {
+        if (times != audioPlayer.numberOfLoops){
+            // lets recreate the audioPlayer - setting numberOfLoops has initially no effect
+            
+            if let previousData = audioPlayer.data {
+                audioPlayer = try AVAudioPlayer(data: previousData)
+            } else if let previousUrl = audioPlayer.url {
+                audioPlayer = try AVAudioPlayer(contentsOf: previousUrl)
+            }
+            soundpool[soundId] = audioPlayer
+            audioPlayer.numberOfLoops = times ?? 0
+            
+            audioPlayer.prepareToPlay()
+        }
+        
         if (audioPlayer.play()) {
             // 0 value means the error (see Android Soundpool API)
             // converting indexes to 1-infinity range
@@ -80,10 +94,18 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         } else {
             result(0) // failed to play sound
         }
+        } catch {
+            result(0)
+        }
     case "pause":
         let streamId = attributes["streamId"] as! Int
         let audioPlayer = playerByStreamId(streamId: streamId)
         audioPlayer.pause()
+        result(streamId)
+    case "resume":
+        let streamId = attributes["streamId"] as! Int
+        let audioPlayer = playerByStreamId(streamId: streamId)
+        audioPlayer.play()
         result(streamId)
     case "stop":
         let streamId = attributes["streamId"] as! Int
