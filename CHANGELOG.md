@@ -1,3 +1,6 @@
+## 0.3.0 (11-12-2018)
+* Upgrade Android Gradle plugin
+
 ## 0.2.0 (05-11-2018)
 * New methods for controlling audio stream:
     * stop
