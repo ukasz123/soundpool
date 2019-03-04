@@ -1,3 +1,7 @@
+## 0.4.0 (04-03-2019)
+* Methods for immediate playback after loading
+* Documentation update
+
 ## 0.3.0 (11-12-2018)
 * Upgrade Android Gradle plugin
 

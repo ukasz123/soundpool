@@ -18,14 +18,16 @@ class Soundpool {
       : assert(type != null),
         _streamType = type;
 
+  /// Creates the Soundpool instance with stream type setting set.
   factory Soundpool({StreamType streamType = StreamType.music}) {
     return Soundpool._(streamType).._connect();
   }
 
   /// Prepares sound for playing
   ///
-  /// load(await rootBundle.load("sounds/dices.m4a")); // loads file
-  /// from assets
+  /// ```
+  /// load(await rootBundle.load("sounds/dices.m4a")); // loads file from assets
+  /// ```
   ///
   /// Returns soundId for future use in [play] (soundId > -1)
   Future<int> load(ByteData rawSound,
@@ -59,6 +61,62 @@ class Soundpool {
     return soundId;
   }
 
+  /// Prepares sound for playing and plays immediately when loaded
+  ///
+  /// ```
+  /// loadAndPlay(await rootBundle.load("sounds/dices.m4a")); // loads file from assets
+  /// ```
+  ///
+  /// Returns soundId for future use in [play] (soundId > -1)
+  ///
+  /// See also:
+  ///
+  /// * [load], which allows for precaching the sound data
+  Future<int> loadAndPlay(ByteData rawSound,
+      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0}) async {
+    int soundId = await load(rawSound, priority: priority);
+    play(soundId, repeat: repeat);
+    return soundId;
+  }
+
+  /// Prepares sound for playing and plays immediately after loading
+  ///
+  /// Loads sound data, buffers it for future playing and starts playing immediately
+  /// when loaded.
+  ///
+  /// Returns soundId for future use in [play] (soundId > -1)
+  ///
+  /// See also:
+  ///
+  /// * [loadUint8List], which allows for precaching the sound data
+  Future<int> loadAndPlayUint8List(Uint8List rawSound,
+      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0}) async {
+    assert(!_disposed, "Soundpool instance was already disposed");
+    int poolId = await _soundpoolId.future;
+    int soundId = await _channel.invokeMethod(
+        "load", {"poolId": poolId, "rawSound": rawSound, "priority": priority});
+    return soundId;
+  }
+
+  /// Prepares sound for playing and plays immediately after loading
+  ///
+  /// Loads sound data from file pointed by [uri]
+  ///
+  /// Returns soundId for future use in [play] (soundId > -1)
+  ///
+  /// See also:
+  ///
+  /// * [loadUri], which allows for precaching the sound data
+  Future<int> loadAndPlayUri(String uri,
+      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0}) async {
+    assert(!_disposed, "Soundpool instance was already disposed");
+    int poolId = await _soundpoolId.future;
+    int soundId = await _channel.invokeMethod(
+        "loadUri", {"poolId": poolId, "uri": uri, "priority": priority});
+    play(soundId, repeat: repeat);
+    return soundId;
+  }
+
   /// Plays sound identified by [soundId]
   ///
   /// Returns streamId to further control playback or 0 if playing failed to
@@ -71,6 +129,9 @@ class Soundpool {
         as int;
   }
 
+  /// Starts playing the sound identified by [soundId].
+  ///
+  /// Returns instance to control playback
   Future<AudioStreamControl> playWithControls(int soundId,
       {int repeat = 0}) async {
     final streamId = await play(soundId, repeat: repeat);
@@ -184,7 +245,8 @@ class Soundpool {
   }
 }
 
-/// The type of the stream
+/// The type of the audio stream. Different streams may have distinct audio
+/// settings (e.g. volume level) within the system
 ///
 /// All sounds for particular Soundpool would be played using the selected stream
 enum StreamType {
