@@ -78,6 +78,7 @@ internal class SoundpoolWrapper (private val streamType: Int) {
 
     private var soundPool = createSoundpool()
 
+    private val loadingSoundsMap = HashMap<Int, Result>()
 
     private fun createSoundpool() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         val usage = when(streamType){
@@ -93,6 +94,19 @@ internal class SoundpoolWrapper (private val streamType: Int) {
                 .build()
     } else {
         SoundPool(1, streamType, 1)
+    }.apply {
+        setOnLoadCompleteListener { _, sampleId, status ->
+            val resultCallback = loadingSoundsMap[sampleId]
+            resultCallback?.let {
+                    if (status == 0) {
+                        it.success(sampleId)
+                    } else {
+                        it.error("Loading failed", "Error code: $status", null)
+                    }
+                loadingSoundsMap.remove(sampleId)
+            }
+
+        }
     }
 
     private val volumeSettings = mutableMapOf<Int, VolumeInfo>()
@@ -112,10 +126,15 @@ internal class SoundpoolWrapper (private val streamType: Int) {
                     val tempFile = createTempFile(prefix = "sound", suffix = "pool")
                     FileOutputStream(tempFile).use {
                         it.write(soundData)
+                        tempFile.deleteOnExit()
+                        val soundId = soundPool.load(tempFile.absolutePath, priority)
+//                    result.success(soundId)
+                        if (soundId > -1) {
+                            loadingSoundsMap[soundId] = result
+                        } else {
+                                result.success(soundId)
+                        }
                     }
-                    tempFile.deleteOnExit()
-                    val soundId = soundPool.load(tempFile.absolutePath, priority)
-                    result.success(soundId)
                 }
             }
             "loadUri" -> {
@@ -130,7 +149,12 @@ internal class SoundpoolWrapper (private val streamType: Int) {
 		                }
 		                tempFile.deleteOnExit()
 		                val soundId = soundPool.load(tempFile.absolutePath, priority)
-		                result.success(soundId)
+
+                        if (soundId > -1) {
+                            loadingSoundsMap[soundId] = result
+                        } else {
+                                result.success(soundId)
+                        }
 	                } catch (t: Throwable){
 		                result.error("URI loading failure", t.message, t)
 	                }
