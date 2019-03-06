@@ -95,6 +95,7 @@ class Soundpool {
     int poolId = await _soundpoolId.future;
     int soundId = await _channel.invokeMethod(
         "load", {"poolId": poolId, "rawSound": rawSound, "priority": priority});
+    play(soundId, repeat: repeat);
     return soundId;
   }
 
