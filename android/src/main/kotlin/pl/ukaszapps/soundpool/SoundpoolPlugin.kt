@@ -120,20 +120,24 @@ internal class SoundpoolWrapper (private val streamType: Int) {
         when (call.method) {
             "load" -> {
                 loadExecutor.execute {
-                    val arguments = call.arguments as Map<String, Any>
-                    val soundData = arguments["rawSound"] as ByteArray
-                    val priority = arguments["priority"] as Int
-                    val tempFile = createTempFile(prefix = "sound", suffix = "pool")
-                    FileOutputStream(tempFile).use {
-                        it.write(soundData)
-                        tempFile.deleteOnExit()
-                        val soundId = soundPool.load(tempFile.absolutePath, priority)
+                    try {
+                        val arguments = call.arguments as Map<String, Any>
+                        val soundData = arguments["rawSound"] as ByteArray
+                        val priority = arguments["priority"] as Int
+                        val tempFile = createTempFile(prefix = "sound", suffix = "pool")
+                        FileOutputStream(tempFile).use {
+                            it.write(soundData)
+                            tempFile.deleteOnExit()
+                            val soundId = soundPool.load(tempFile.absolutePath, priority)
 //                    result.success(soundId)
-                        if (soundId > -1) {
-                            loadingSoundsMap[soundId] = result
-                        } else {
+                            if (soundId > -1) {
+                                loadingSoundsMap[soundId] = result
+                            } else {
                                 result.success(soundId)
+                            }
                         }
+                    } catch (t: Throwable){
+                        result.error("Loading failure", t.message, null)
                     }
                 }
             }
@@ -156,7 +160,7 @@ internal class SoundpoolWrapper (private val streamType: Int) {
                                 result.success(soundId)
                         }
 	                } catch (t: Throwable){
-		                result.error("URI loading failure", t.message, t)
+		                result.error("URI loading failure", t.message, null)
 	                }
                 }
             }
