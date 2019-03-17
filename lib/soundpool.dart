@@ -9,18 +9,20 @@ class Soundpool {
 
   static const _DEFAULT_SOUND_PRIORITY = 1;
 
+  final int _maxStreams;
   final StreamType _streamType;
   final Completer<int> _soundpoolId = Completer();
 
   bool _disposed = false;
 
-  Soundpool._([StreamType type = StreamType.music])
+  Soundpool._([StreamType type = StreamType.music, int maxStreams = 1])
       : assert(type != null),
-        _streamType = type;
+        _streamType = type,
+        _maxStreams = maxStreams;
 
   /// Creates the Soundpool instance with stream type setting set.
-  factory Soundpool({StreamType streamType = StreamType.music}) {
-    return Soundpool._(streamType).._connect();
+  factory Soundpool({StreamType streamType = StreamType.music, int maxStreams}) {
+    return Soundpool._(streamType, maxStreams).._connect();
   }
 
   /// Prepares sound for playing
@@ -237,7 +239,7 @@ class Soundpool {
   /// Connects to native Soundpool instance
   _connect() async {
     final int id = await _channel
-        .invokeMethod("initSoundpool", {"streamType": _streamType.index});
+        .invokeMethod("initSoundpool", {"maxStreams": _maxStreams, "streamType": _streamType.index});
     if (id >= 0) {
       _soundpoolId.complete(id);
     } else {
