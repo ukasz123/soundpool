@@ -1,3 +1,7 @@
+## 0.5.0 (20-03-2019)
+* `maxStreams` parameter added to the constructor (_Android only feature_)
+(thanks to [niusounds](https://github.com/niusounds))
+
 ## 0.4.0 (04-03-2019)
 * Methods for immediate playback after loading
 * Documentation update
@@ -16,7 +20,7 @@
 * Stream handling wrapper API
 
 ### 0.1.1 (16-09-2018)
-* Fix type cast error in play() (thanks to SpencerCornish)
+* Fix type cast error in play() (thanks to [SpencerCornish](https://github.com/SpencerCornish))
 
 ## 0.1.0 (10-09-2018)
 * **Breaking change**
