@@ -31,6 +31,7 @@ class SoundpoolPlugin : MethodCallHandler {
             "initSoundpool" -> {
                 val arguments = call.arguments as Map<String, Int>
                 val streamTypeIndex = arguments["streamType"]
+                val maxStreams = arguments["maxStreams"] ?: 1
                 val streamType = when(streamTypeIndex){
                     0 -> AudioManager.STREAM_RING
                     1 -> AudioManager.STREAM_ALARM
@@ -39,7 +40,7 @@ class SoundpoolPlugin : MethodCallHandler {
                     else -> -1
                 }
                 if (streamType > -1){
-                    val wrapper = SoundpoolWrapper(streamType)
+                    val wrapper = SoundpoolWrapper(maxStreams, streamType)
                     val index = wrappers.size
                     wrappers.add(wrapper)
                     result.success(index)
@@ -68,7 +69,7 @@ internal data class VolumeInfo(val left: Float = 1.0f, val right: Float = 1.0f);
 /**
  * Wraps Soundpool instance and handles instance-level method calls
  */
-internal class SoundpoolWrapper (private val streamType: Int) {
+internal class SoundpoolWrapper (private val maxStreams: Int, private val streamType: Int) {
     companion object {
 
         private val DEFAULT_VOLUME_INFO = VolumeInfo()
@@ -87,13 +88,15 @@ internal class SoundpoolWrapper (private val streamType: Int) {
             AudioManager.STREAM_NOTIFICATION -> android.media.AudioAttributes.USAGE_NOTIFICATION
             else -> android.media.AudioAttributes.USAGE_GAME
         }
-        SoundPool.Builder().setAudioAttributes(AudioAttributes.Builder().setLegacyStreamType
+        SoundPool.Builder()
+                .setMaxStreams(maxStreams)
+                .setAudioAttributes(AudioAttributes.Builder().setLegacyStreamType
         (streamType)
                 .setUsage(usage)
                 .build())
                 .build()
     } else {
-        SoundPool(1, streamType, 1)
+        SoundPool(maxStreams, streamType, 1)
     }.apply {
         setOnLoadCompleteListener { _, sampleId, status ->
             val resultCallback = loadingSoundsMap[sampleId]
