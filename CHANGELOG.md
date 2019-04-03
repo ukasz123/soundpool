@@ -1,4 +1,4 @@
-## 0.6.0 (20-03-2019)
+## 0.6.0 (03-04-2019)
 * **Breaking change**. Migrate from the deprecated original Android Support
   Library to AndroidX. This shouldn't result in any functional changes, but it
   requires any Android apps using this plugin to [also
