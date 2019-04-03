@@ -1,3 +1,10 @@
+## 0.6.0 (20-03-2019)
+* **Breaking change**. Migrate from the deprecated original Android Support
+  Library to AndroidX. This shouldn't result in any functional changes, but it
+  requires any Android apps using this plugin to [also
+  migrate](https://developer.android.com/jetpack/androidx/migrate) if they're
+  using the original support library.
+
 ## 0.5.0 (20-03-2019)
 * `maxStreams` parameter added to the constructor (_Android only feature_)
 (thanks to [niusounds](https://github.com/niusounds))
