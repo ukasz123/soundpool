@@ -2,7 +2,10 @@
 * `maxStreams` parameter added to the constructor (_Android only feature_)
 (thanks to [niusounds](https://github.com/niusounds))
 #### 0.5.1
-* Gradle plugin updated
+* Gradle plugin upgraded
+* Kotlin upgraded
+* Dependency to Android Support library was removed
+* Swift version upgraded
 
 ## 0.4.0 (04-03-2019)
 * Methods for immediate playback after loading
