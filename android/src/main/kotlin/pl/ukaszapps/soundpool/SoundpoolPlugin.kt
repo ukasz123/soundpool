@@ -4,6 +4,8 @@ import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -24,7 +26,8 @@ class SoundpoolPlugin : MethodCallHandler {
 
         private const val CHANNEL_NAME = "pl.ukaszapps/soundpool"
     }
-    private val wrappers : MutableList<SoundpoolWrapper> = mutableListOf()
+
+    private val wrappers: MutableList<SoundpoolWrapper> = mutableListOf()
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
@@ -32,14 +35,14 @@ class SoundpoolPlugin : MethodCallHandler {
                 val arguments = call.arguments as Map<String, Int>
                 val streamTypeIndex = arguments["streamType"]
                 val maxStreams = arguments["maxStreams"] ?: 1
-                val streamType = when(streamTypeIndex){
+                val streamType = when (streamTypeIndex) {
                     0 -> AudioManager.STREAM_RING
                     1 -> AudioManager.STREAM_ALARM
                     2 -> AudioManager.STREAM_MUSIC
                     3 -> AudioManager.STREAM_NOTIFICATION
                     else -> -1
                 }
-                if (streamType > -1){
+                if (streamType > -1) {
                     val wrapper = SoundpoolWrapper(maxStreams, streamType)
                     val index = wrappers.size
                     wrappers.add(wrapper)
@@ -69,20 +72,26 @@ internal data class VolumeInfo(val left: Float = 1.0f, val right: Float = 1.0f);
 /**
  * Wraps Soundpool instance and handles instance-level method calls
  */
-internal class SoundpoolWrapper (private val maxStreams: Int, private val streamType: Int) {
+internal class SoundpoolWrapper(private val maxStreams: Int, private val streamType: Int) {
     companion object {
 
         private val DEFAULT_VOLUME_INFO = VolumeInfo()
 
         private val loadExecutor: Executor by lazy { Executors.newCachedThreadPool() }
+
+        private val uiThreadHandler: Handler by lazy { Handler(Looper.getMainLooper()) }
     }
 
     private var soundPool = createSoundpool()
 
     private val loadingSoundsMap = HashMap<Int, Result>()
 
+    private fun ui(block:()->Unit) {
+        uiThreadHandler.post { block() }
+    }
+
     private fun createSoundpool() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        val usage = when(streamType){
+        val usage = when (streamType) {
             AudioManager.STREAM_RING -> AudioAttributes.USAGE_NOTIFICATION_RINGTONE
             AudioManager.STREAM_ALARM -> android.media.AudioAttributes.USAGE_ALARM
             AudioManager.STREAM_NOTIFICATION -> android.media.AudioAttributes.USAGE_NOTIFICATION
@@ -91,9 +100,9 @@ internal class SoundpoolWrapper (private val maxStreams: Int, private val stream
         SoundPool.Builder()
                 .setMaxStreams(maxStreams)
                 .setAudioAttributes(AudioAttributes.Builder().setLegacyStreamType
-        (streamType)
-                .setUsage(usage)
-                .build())
+                (streamType)
+                        .setUsage(usage)
+                        .build())
                 .build()
     } else {
         SoundPool(maxStreams, streamType, 1)
@@ -101,12 +110,15 @@ internal class SoundpoolWrapper (private val maxStreams: Int, private val stream
         setOnLoadCompleteListener { _, sampleId, status ->
             val resultCallback = loadingSoundsMap[sampleId]
             resultCallback?.let {
+                ui {
                     if (status == 0) {
                         it.success(sampleId)
                     } else {
                         it.error("Loading failed", "Error code: $status", null)
                     }
+                }
                 loadingSoundsMap.remove(sampleId)
+
             }
 
         }
@@ -136,35 +148,35 @@ internal class SoundpoolWrapper (private val maxStreams: Int, private val stream
                             if (soundId > -1) {
                                 loadingSoundsMap[soundId] = result
                             } else {
-                                result.success(soundId)
+                                ui {  result.success(soundId)}
                             }
                         }
-                    } catch (t: Throwable){
-                        result.error("Loading failure", t.message, null)
+                    } catch (t: Throwable) {
+                        ui {  result.error("Loading failure", t.message, null)}
                     }
                 }
             }
             "loadUri" -> {
                 loadExecutor.execute {
-	                try {
-		                val arguments = call.arguments as Map<String, Any>
-		                val soundUri = arguments["uri"] as String
-		                val priority = arguments["priority"] as Int
-		                val tempFile = createTempFile(prefix = "sound", suffix = "pool")
-		                FileOutputStream(tempFile).use {
-			                it.write(URI.create(soundUri).toURL().readBytes())
-		                }
-		                tempFile.deleteOnExit()
-		                val soundId = soundPool.load(tempFile.absolutePath, priority)
+                    try {
+                        val arguments = call.arguments as Map<String, Any>
+                        val soundUri = arguments["uri"] as String
+                        val priority = arguments["priority"] as Int
+                        val tempFile = createTempFile(prefix = "sound", suffix = "pool")
+                        FileOutputStream(tempFile).use {
+                            it.write(URI.create(soundUri).toURL().readBytes())
+                        }
+                        tempFile.deleteOnExit()
+                        val soundId = soundPool.load(tempFile.absolutePath, priority)
 
                         if (soundId > -1) {
                             loadingSoundsMap[soundId] = result
                         } else {
-                                result.success(soundId)
+                           ui {  result.success(soundId) }
                         }
-	                } catch (t: Throwable){
-		                result.error("URI loading failure", t.message, null)
-	                }
+                    } catch (t: Throwable) {
+                        ui { result.error("URI loading failure", t.message, null) }
+                    }
                 }
             }
             "release" -> {
@@ -203,14 +215,14 @@ internal class SoundpoolWrapper (private val maxStreams: Int, private val stream
                 val arguments = call.arguments as Map<String, Any?>
                 val streamId: Int? = arguments["streamId"] as Int?
                 val soundId: Int? = arguments["soundId"] as Int?
-                if (streamId == null && soundId == null){
+                if (streamId == null && soundId == null) {
                     result.error("InvalidParameters", "Either 'streamId' or 'soundId' has to be " +
                             "passed", null)
                 }
                 val volumeLeft: Double = arguments["volumeLeft"]!! as Double
                 val volumeRight: Double = arguments["volumeRight"]!! as Double
 
-                streamId?.let{
+                streamId?.let {
                     soundPool.setVolume(it, volumeLeft.toFloat(), volumeRight.toFloat())
                 }
                 soundId?.let {
