@@ -9,6 +9,8 @@
 #### 0.5.2 (28-05-2019)
 * Handle content:// schema on Android
 * Run callbacks on UI thread
+#### 0.5.3 (03-06-2019)
+* Set Swift version in plugin's podspec
 
 ## 0.4.0 (04-03-2019)
 * Methods for immediate playback after loading
