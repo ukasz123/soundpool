@@ -13,3 +13,4 @@ doc/
 **/local.properties
 
 node_modules
+flutter_export_environment.sh
