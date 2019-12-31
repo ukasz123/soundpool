@@ -7,7 +7,7 @@ This can be useful in following scenarios:
 - lower latency between play signal and actual playing of the sound (audio does not need to be read from disc/web),
 - the same sound may be used multiple times.
 
-Inspired by [Android SoundPool API](https://developer.android.com/reference/android/media/SoundPool).
+Inspired by [Android SoundPool API](https://developer.android.com/reference/android/media/SoundPool). This also means that multiple optional features are supported on **Android only**.
 
 Example:
 
