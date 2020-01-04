@@ -1,3 +1,10 @@
+## 0.6.0 (04-01-2020)
+* **BREAKING CHANGE:** Web support (limited)
+    * Unavailable:
+        * `pause()`/`resume()` functions crashes
+        * `streamType` parameter has no effect
+        * `maxStreams` parameter has no effect - there is no limit on simultanously played sounds
+
 ## 0.5.0 (20-03-2019)
 * `maxStreams` parameter added to the constructor (_Android only feature_)
 (thanks to [niusounds](https://github.com/niusounds))

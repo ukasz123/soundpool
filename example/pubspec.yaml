@@ -1,5 +1,6 @@
 name: soundpool_example
 description: Demonstrates how to use the soundpool plugin.
+version: 0.0.1+1
 
 dependencies:
   flutter:
@@ -27,3 +28,4 @@ flutter:
     - sounds/dices.m4a
     # Following sound was downloaded from http://soundbible.com/2212-Van-Sliding-Door.html
     - sounds/van-sliding-door-daniel_simon.wav
+    - sounds/do-you-like-it.wav
