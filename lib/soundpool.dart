@@ -23,7 +23,7 @@ class Soundpool {
   /// Creates the Soundpool instance with stream type setting set.
   /// Soundpool can play up to [maxStreams] of simultaneous streams
   /// 
-  /// *Note:* Optional constructor parameters have effect on Android only.
+  /// *Note:* Optional [streamType] parameter has effect on Android only.
   factory Soundpool(
       {StreamType streamType = StreamType.music, int maxStreams = 1}) {
     return Soundpool._(streamType, maxStreams).._connect();
