@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:soundpool/soundpool.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 Soundpool _soundpool;
 
@@ -20,6 +21,10 @@ class SimpleApp extends StatefulWidget {
 
 class _SimpleAppState extends State<SimpleApp> {
 
+  int _alarmSoundStreamId;
+
+  String get _cheeringUrl => kIsWeb ? '/c-c-1.mp3' : 'https://raw.githubusercontent.com/ukasz123/soundpool/feature/web_support/example/web/c-c-1.mp3';
+
   void initState(){
     _soundId = _loadSound();
     _cheeringId = _loadCheering();
@@ -33,14 +38,31 @@ class _SimpleAppState extends State<SimpleApp> {
       home: Material(
         child: Center(
           child: SizedBox(
-            width: 250,
+            width: kIsWeb ? 450: double.infinity,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              RaisedButton(
-            onPressed: _playSound,
-            child: Text("Play sound"),
-          ),
+              Text('Rolling dices'),
+               Row(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                children:[
+                  RaisedButton(
+                    onPressed: _playSound,
+                    child: Text("Play"),
+                    ),
+                    SizedBox(width:8),
+                  RaisedButton(
+                    onPressed: _pauseSound,
+                    child: Text("Pause"),
+                    ),
+                    SizedBox(width:8),
+                  RaisedButton(
+                    onPressed: _stopSound,
+                    child: Text("Stop"),
+                    ),
+                ],
+              ),
+                    SizedBox(height:8),
               RaisedButton(
             onPressed: _playCheering,
             child: Text("Play cheering"),
@@ -66,19 +88,26 @@ class _SimpleAppState extends State<SimpleApp> {
   }
 
   Future<int> _loadCheering() async {
-    return await _soundpool.loadUri('/c-c-1.mp3');
+    return await _soundpool.loadUri(_cheeringUrl);
   }
 
   Future<void> _playSound() async {
-    // if (_alarmSound < 0) {
-    //   var asset = await rootBundle.load("sounds/do-you-like-it.wav");
-    //   _alarmSound = await _soundpool.loadAndPlay(asset);
-    // } else {
-    //   _soundpool.play(_alarmSound);
-    // }
     var _alarmSound = await _soundId;
-    _soundpool.play(_alarmSound);
+    _alarmSoundStreamId = await _soundpool.play(_alarmSound);
   }
+
+  Future<void> _pauseSound() async {
+    if (_alarmSoundStreamId != null){
+      await _soundpool.pause(_alarmSoundStreamId);
+    }
+  }
+
+  Future<void> _stopSound() async {
+    if (_alarmSoundStreamId != null){
+      await _soundpool.stop(_alarmSoundStreamId);
+    }
+  }
+
   Future<void> _playCheering() async {
     
     var _sound = await _cheeringId;
@@ -87,8 +116,8 @@ class _SimpleAppState extends State<SimpleApp> {
 
   Future<void> _updateVolume(newVolume) async{
     // if (_alarmSound >= 0){
-      var _alarmSound = await _cheeringId;
-      _soundpool.setVolume(soundId: _alarmSound, volume: newVolume);
+      var _cheeringSound = await _cheeringId;
+      _soundpool.setVolume(soundId: _cheeringSound, volume: newVolume);
     // }
   }
 }
