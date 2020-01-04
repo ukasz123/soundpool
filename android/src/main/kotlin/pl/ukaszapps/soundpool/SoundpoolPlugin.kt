@@ -13,6 +13,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
+import java.io.File
 import java.io.FileOutputStream
 import java.net.URI
 import java.util.concurrent.Executor
@@ -25,6 +26,9 @@ class SoundpoolPlugin(context: Context) : MethodCallHandler {
             val channel = MethodChannel(registrar.messenger(), CHANNEL_NAME)
 
             channel.setMethodCallHandler(SoundpoolPlugin(registrar.context()))
+
+            // clearing temporary files from previous session
+            with(registrar.context().cacheDir) { list { _, name -> name.matches("sound(.*)pool".toRegex()) }.forEach { File(this, it).delete() } }
         }
 
         private const val CHANNEL_NAME = "pl.ukaszapps/soundpool"
@@ -144,7 +148,7 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                         val arguments = call.arguments as Map<String, Any>
                         val soundData = arguments["rawSound"] as ByteArray
                         val priority = arguments["priority"] as Int
-                        val tempFile = createTempFile(prefix = "sound", suffix = "pool")
+                        val tempFile = createTempFile(prefix = "sound", suffix = "pool", directory = context.cacheDir)
                         FileOutputStream(tempFile).use {
                             it.write(soundData)
                             tempFile.deleteOnExit()
@@ -172,7 +176,7 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                                     return@let if (uri.scheme == "content") {
                                         soundPool.load(context.contentResolver.openAssetFileDescriptor(Uri.parse(soundUri), "r"), 1)
                                     } else {
-                                        val tempFile = createTempFile(prefix = "sound", suffix = "pool")
+                                        val tempFile = createTempFile(prefix = "sound", suffix = "pool", directory = context.cacheDir)
                                         FileOutputStream(tempFile).use { out ->
                                             out.write(uri.toURL().readBytes())
                                         }
