@@ -102,7 +102,7 @@ class _MyAppState extends State<MyApp> {
 
   void initSoundPools() {
     soundpools =
-        StreamType.values.map((type) => Soundpool(streamType: type)).toList();
+        StreamType.values.map((type) => Soundpool(streamType: type, maxStreams:3)).toList();
 
     soundsMap = Map.fromEntries(
         soundpools.map((soundpool) => MapEntry(soundpool, SoundsMap())));
@@ -205,7 +205,7 @@ class _MyAppState extends State<MyApp> {
   Future<Null> initSoundsForPool(Soundpool pool, SoundsMap sounds) async {
     print("Loading sounds for pool ${pool.streamType}...");
     sounds.dicesSoundId =
-        await rootBundle.load("sounds/dices.m4a").then((ByteData soundData) {
+        await rootBundle.load("sounds/van-sliding-door-daniel_simon.wav").then((ByteData soundData) {
       return pool.load(soundData);
     });
     await pool.setVolume(soundId: sounds.dicesSoundId, volume: sounds.volume);

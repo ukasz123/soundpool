@@ -21,3 +21,9 @@ Example:
                 });
     int streamId = await pool.play(soundId);
 ```
+
+### DOs and DON'Ts
+* __DO NOT__ create the `Soundpool` instance multiple times; __DO__ create a `Soundpool` for logically connected sounds (ex. sounds for level, sounds with the same `streamType`),
+* __DO NOT__ load the same file multiple times; __DO__ load it once (ideally while the application is starting), store sound id and use `play(soundId)`,
+* __DO NOT__ leave sounds loaded in memory when no longer used; __DO__ call `release()` or `dispose()` when sounds are no longer useful,
+* __DO NOT__ play music files; __DO__ use plugin that is intended for that.
