@@ -71,14 +71,14 @@ class _SimpleAppState extends State<SimpleApp> {
           ),
             SizedBox(height: 4),
               Text('Set rate '),
-              Slider.adaptive(
+              Row(children:[Expanded(child:Slider.adaptive(
                 min: 0.5, max: 2.0,
                 value: _rate,
                 onChanged: (newRate){
                   setState((){_rate = newRate;});
                   _updateCheeringRate();
                 },
-              ),
+              ),), Text('${_rate.toStringAsFixed(3)}'),]),
               SizedBox(height: 8.0),
               Text('Volume'),
             Slider.adaptive(
