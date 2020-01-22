@@ -55,7 +55,8 @@ class SoundpoolPlugin {
         int id = call.arguments['poolId'];
         _AudioContextWrapper wrapper = _pool[id];
         var soundId = call.arguments['soundId'] as int;
-        return await wrapper.play(soundId);
+        var rate = call.arguments['rate'] as double;
+        return await wrapper.play(soundId, rate: rate);
 
       case 'stop':
         // {"poolId": poolId, "streamId": streamId,}
@@ -85,7 +86,18 @@ class SoundpoolPlugin {
           wrapper.setStreamVolume(streamId, volumeLeft, volumeRight);
         }
         return;
-
+      case 'setRate':
+        // {
+        //       "poolId": poolId,
+        //       "streamId": streamId,
+        //       "rate": playbackRate,
+        // }
+        int id = call.arguments['poolId'];
+        _AudioContextWrapper wrapper = _pool[id];
+        var streamId = call.arguments['streamId'] as int;
+        double rate = call.arguments['rate'] as double ?? 1.0;
+        wrapper.setStreamRate(streamId, rate);
+        return;
       case 'release':
         int id = call.arguments['poolId'];
         _AudioContextWrapper wrapper = _pool[id];
@@ -134,12 +146,16 @@ class _AudioContextWrapper {
     return await load(buffer.buffer);
   }
 
-  Future<int> play(int soundId) async {
+  Future<int> play(int soundId, {double rate = 1.0}) async {
     _CachedAudioSettings cachedAudio= _cache[soundId];
     audio.AudioBuffer audioBuffer = cachedAudio.buffer;
+    var playbackRate = rate ?? 1.0;
 
     var sampleSource = audioContext.createBufferSource();
     sampleSource.buffer = audioBuffer;
+    // updating playback rate
+    sampleSource.playbackRate.value = playbackRate;
+    // gain node for setting volume level
     var gainNode = audioContext.createGain();
     gainNode.gain.value = cachedAudio.volumeLeft;
 
@@ -181,6 +197,13 @@ class _AudioContextWrapper {
       _CachedAudioSettings cachedAudio= _cache[playingWrapper.soundId];
       cachedAudio?.volumeLeft = volumeLeft;
       cachedAudio?.volumeRight = volumeRight;
+    }
+  }
+
+  Future<void> setStreamRate(int streamId, double rate) async {
+    _PlayingAudioWrapper playingWrapper = _playedAudioCache[streamId];
+    if (playingWrapper != null){
+      playingWrapper.sourceNode.playbackRate.value = rate;
     }
   }
 

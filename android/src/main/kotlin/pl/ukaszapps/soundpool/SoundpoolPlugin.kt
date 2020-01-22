@@ -19,6 +19,10 @@ import java.net.URI
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
+
+internal val loadExecutor: Executor = Executors.newCachedThreadPool()
+
+internal val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
 class SoundpoolPlugin(context: Context) : MethodCallHandler {
     companion object {
         @JvmStatic
@@ -85,17 +89,13 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
     companion object {
 
         private val DEFAULT_VOLUME_INFO = VolumeInfo()
-
-        private val loadExecutor: Executor by lazy { Executors.newCachedThreadPool() }
-
-        private val uiThreadHandler: Handler by lazy { Handler(Looper.getMainLooper()) }
     }
 
     private var soundPool = createSoundpool()
 
     private val loadingSoundsMap = HashMap<Int, Result>()
 
-    private fun ui(block: () -> Unit) {
+    private inline fun ui(crossinline block: () -> Unit) {
         uiThreadHandler.post { block() }
     }
 
@@ -131,6 +131,7 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
             }
 
         }
+
     }
 
     private val volumeSettings = mutableMapOf<Int, VolumeInfo>()
@@ -201,12 +202,13 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                 result.success(null)
             }
             "play" -> {
-                val arguments = call.arguments as Map<String, Int>
-                val soundId = arguments["soundId"]!!
-                val repeat = arguments["repeat"] ?: 0
+                val arguments = call.arguments as Map<String, Any>
+                val soundId: Int = (arguments["soundId"] as Int?)!!
+                val repeat: Int = arguments["repeat"] as Int? ?: 0
+                val rate: Double = arguments["rate"] as Double? ?: 1.0
                 val volumeInfo = volumeSettingsForSoundId(soundId = soundId)
                 val streamId = soundPool.play(soundId, volumeInfo.left, volumeInfo.right, 0,
-                        repeat, 1.0f)
+                        repeat, rate.toFloat())
                 result.success(streamId)
             }
             "pause" -> {
@@ -245,6 +247,14 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                     volumeSettings[it] = VolumeInfo(left = volumeLeft.toFloat(), right =
                     volumeRight.toFloat())
                 }
+                result.success(null)
+            }
+            "setRate" -> {
+
+                val arguments = call.arguments as Map<String, Any?>
+                val streamId: Int = arguments["streamId"]!! as Int
+                val rate: Double = arguments["rate"] as Double? ?: 1.0
+                soundPool.setRate(streamId, rate.toFloat())
                 result.success(null)
             }
             else -> result.notImplemented()

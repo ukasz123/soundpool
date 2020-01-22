@@ -22,6 +22,7 @@ class SimpleApp extends StatefulWidget {
 class _SimpleAppState extends State<SimpleApp> {
 
   int _alarmSoundStreamId;
+  int _cheeringStreamId = -1;
 
   String get _cheeringUrl => kIsWeb ? '/c-c-1.mp3' : 'https://raw.githubusercontent.com/ukasz123/soundpool/feature/web_support/example/web/c-c-1.mp3';
 
@@ -30,6 +31,7 @@ class _SimpleAppState extends State<SimpleApp> {
     _cheeringId = _loadCheering();
   }
   double _volume = 1.0;
+  double _rate = 1.0;
   Future<int> _soundId;
   Future<int> _cheeringId;
   @override
@@ -67,6 +69,18 @@ class _SimpleAppState extends State<SimpleApp> {
             onPressed: _playCheering,
             child: Text("Play cheering"),
           ),
+            SizedBox(height: 4),
+              Text('Set rate '),
+              Row(children:[Expanded(child:Slider.adaptive(
+                min: 0.5, max: 2.0,
+                value: _rate,
+                onChanged: (newRate){
+                  setState((){_rate = newRate;});
+                  _updateCheeringRate();
+                },
+              ),), Text('${_rate.toStringAsFixed(3)}'),]),
+              SizedBox(height: 8.0),
+              Text('Volume'),
             Slider.adaptive(
               value: _volume,
               onChanged:(newVolume) {
@@ -111,7 +125,13 @@ class _SimpleAppState extends State<SimpleApp> {
   Future<void> _playCheering() async {
     
     var _sound = await _cheeringId;
-    _soundpool.play(_sound);
+    _cheeringStreamId = await _soundpool.play(_sound, rate: _rate,);
+  }
+
+  Future<void> _updateCheeringRate() async {
+    if (_cheeringStreamId > 0){
+      await _soundpool.setRate(streamId: _cheeringStreamId, playbackRate: _rate);
+    }
   }
 
   Future<void> _updateVolume(newVolume) async{

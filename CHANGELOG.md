@@ -1,3 +1,8 @@
+### 0.6.1 (22-01-2020)
+* Playback rate control
+** set in advance with `play()`
+** update while playing with `setRate()`
+
 ## 0.6.0 (04-01-2020)
 * **BREAKING CHANGE:** Web support (limited)
     * Unavailable:
