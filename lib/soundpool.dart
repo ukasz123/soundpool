@@ -91,9 +91,9 @@ class Soundpool {
   /// ## web
   /// [priority] and [repeat] are ignored. The sound is played only once.
   Future<int> loadAndPlay(ByteData rawSound,
-      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0}) async {
+      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0, double rate = 1.0}) async {
     int soundId = await load(rawSound, priority: priority);
-    play(soundId, repeat: repeat);
+    play(soundId, repeat: repeat, rate: rate);
     return soundId;
   }
 
@@ -111,12 +111,12 @@ class Soundpool {
   /// ## web
   /// [priority] and [repeat] are ignored. The sound is played only once.
   Future<int> loadAndPlayUint8List(Uint8List rawSound,
-      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0}) async {
+      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0, double rate = 1.0}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     int poolId = await _soundpoolId.future;
     int soundId = await _channel.invokeMethod(
         "load", {"poolId": poolId, "rawSound": rawSound, "priority": priority});
-    play(soundId, repeat: repeat);
+    play(soundId, repeat: repeat, rate: rate);
     return soundId;
   }
 
@@ -133,12 +133,12 @@ class Soundpool {
   /// ## web
   /// [priority] and [repeat] are ignored. The sound is played only once.
   Future<int> loadAndPlayUri(String uri,
-      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0}) async {
+      {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0, double rate = 1.0}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     int poolId = await _soundpoolId.future;
     int soundId = await _channel.invokeMethod(
         "loadUri", {"poolId": poolId, "uri": uri, "priority": priority});
-    play(soundId, repeat: repeat);
+    play(soundId, repeat: repeat, rate: rate);
     return soundId;
   }
 
@@ -149,11 +149,14 @@ class Soundpool {
   /// 
   /// ## web
   /// [repeat] is ignored. The sound is played only once.
-  Future<int> play(int soundId, {int repeat = 0}) async {
+  Future<int> play(int soundId, {int repeat = 0, double rate = 1.0}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
+    assert(rate >= 0.5 && rate <= 2.0, 
+    "'rate' has to be value in (0.5 - 2.0) range",
+    );
     int poolId = await _soundpoolId.future;
     return await _channel.invokeMethod(
-            "play", {"poolId": poolId, "soundId": soundId, "repeat": repeat})
+            "play", {"poolId": poolId, "soundId": soundId, "repeat": repeat, "rate": rate})
         as int;
   }
 
@@ -164,8 +167,8 @@ class Soundpool {
   /// ## web
   /// [repeat] is ignored. The sound is played only once.
   Future<AudioStreamControl> playWithControls(int soundId,
-      {int repeat = 0}) async {
-    final streamId = await play(soundId, repeat: repeat);
+      {int repeat = 0, double rate = 1.0}) async {
+    final streamId = await play(soundId, repeat: repeat, rate: rate);
     return AudioStreamControl._(this, streamId);
   }
 
@@ -244,6 +247,28 @@ class Soundpool {
               "volumeLeft": volumeLeft,
               "volumeRight": volumeRight,
             }));
+  }
+
+  /// Sets playback rate. A value of 1.0 means normal speed, 0.5 - half speed, 2.0 - double speed.
+  /// 
+  /// Available value range: (0.5 - 2.0)
+  Future setRate({int streamId, double playbackRate}) {
+    assert(!_disposed, "Soundpool instance was already disposed");
+    assert(
+         streamId != null,
+        "'streamId' has to be passed");
+    assert(
+         playbackRate != null,
+        "'playbackRate' has to be passed");
+    assert(playbackRate >= 0.5 && playbackRate <= 2.0, 
+    "'playbackRate' has to be value in (0.5 - 2.0) range",
+    );
+    return _soundpoolId.future
+        .then((poolId) => _channel.invokeMethod("setRate", {
+              "poolId": poolId,
+              "streamId": streamId,
+              "rate": playbackRate,
+        }));
   }
 
   /// Releases loaded sounds
@@ -356,5 +381,15 @@ class AudioStreamControl {
         volume: volume,
         volumeLeft: volumeLeft,
         volumeRight: volumeRight);
+  }
+
+  /// Sets playback rate. A value of 1.0 means normal speed, 0.5 - half speed, 2.0 - double speed.
+  /// 
+  /// Available value range: (0.5 - 2.0)
+  Future setRate({double playbackRate}) {
+    return _pool.setRate(
+      streamId: stream,
+      playbackRate: playbackRate,
+    );
   }
 }
