@@ -1,3 +1,5 @@
+## 1.0.0 ()
+* Migrated to use platform interface
 ### 0.6.1 (22-01-2020)
 * Playback rate control
 ** set in advance with `play()`
