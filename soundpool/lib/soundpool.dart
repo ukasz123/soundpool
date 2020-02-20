@@ -3,15 +3,17 @@ import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
+import 'package:soundpool_platform_interface/soundpool_platform_interface.dart';
+
 class Soundpool {
-  static const MethodChannel _channel =
-      const MethodChannel('pl.ukaszapps/soundpool');
 
   static const _DEFAULT_SOUND_PRIORITY = 1;
 
   final int _maxStreams;
   final StreamType _streamType;
   final Completer<int> _soundpoolId = Completer();
+
+  SoundpoolPlatform get _platformInstance => SoundpoolPlatform.instance;
 
   bool _disposed = false;
 
@@ -55,8 +57,7 @@ class Soundpool {
       {int priority = _DEFAULT_SOUND_PRIORITY}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     int poolId = await _soundpoolId.future;
-    int soundId = await _channel.invokeMethod(
-        "load", {"poolId": poolId, "rawSound": rawSound, "priority": priority});
+    int soundId = await _platformInstance.loadUint8List(poolId, rawSound, priority);
     return soundId;
   }
 
@@ -71,8 +72,7 @@ class Soundpool {
       {int priority = _DEFAULT_SOUND_PRIORITY}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     int poolId = await _soundpoolId.future;
-    int soundId = await _channel.invokeMethod(
-        "loadUri", {"poolId": poolId, "uri": uri, "priority": priority});
+    int soundId = await _platformInstance.loadUri(poolId, uri, priority);
     return soundId;
   }
 
@@ -113,9 +113,7 @@ class Soundpool {
   Future<int> loadAndPlayUint8List(Uint8List rawSound,
       {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0, double rate = 1.0}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    int poolId = await _soundpoolId.future;
-    int soundId = await _channel.invokeMethod(
-        "load", {"poolId": poolId, "rawSound": rawSound, "priority": priority});
+    int soundId = await loadUint8List(rawSound, priority: priority);
     play(soundId, repeat: repeat, rate: rate);
     return soundId;
   }
@@ -135,9 +133,7 @@ class Soundpool {
   Future<int> loadAndPlayUri(String uri,
       {int priority = _DEFAULT_SOUND_PRIORITY, int repeat = 0, double rate = 1.0}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    int poolId = await _soundpoolId.future;
-    int soundId = await _channel.invokeMethod(
-        "loadUri", {"poolId": poolId, "uri": uri, "priority": priority});
+    int soundId = await loadUri(uri, priority: priority);
     play(soundId, repeat: repeat, rate: rate);
     return soundId;
   }
@@ -155,9 +151,7 @@ class Soundpool {
     "'rate' has to be value in (0.5 - 2.0) range",
     );
     int poolId = await _soundpoolId.future;
-    return await _channel.invokeMethod(
-            "play", {"poolId": poolId, "soundId": soundId, "repeat": repeat, "rate": rate})
-        as int;
+    return await _platformInstance.play(poolId, soundId, repeat, rate);
   }
 
   /// Starts playing the sound identified by [soundId].
@@ -178,10 +172,7 @@ class Soundpool {
   Future<void> stop(int streamId) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     int poolId = await _soundpoolId.future;
-    await _channel.invokeMethod("stop", {
-      "poolId": poolId,
-      "streamId": streamId,
-    });
+    await _platformInstance.stop(poolId, streamId);
   }
 
   /// Pauses playing sound identified by [streamId]
@@ -191,10 +182,7 @@ class Soundpool {
   Future<void> pause(int streamId) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     int poolId = await _soundpoolId.future;
-    await _channel.invokeMethod("pause", {
-      "poolId": poolId,
-      "streamId": streamId,
-    });
+    await _platformInstance.pause(poolId, streamId);
   }
 
   /// Resumes playing sound identified by [streamId]
@@ -204,10 +192,7 @@ class Soundpool {
   Future<void> resume(int streamId) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     int poolId = await _soundpoolId.future;
-    await _channel.invokeMethod("resume", {
-      "poolId": poolId,
-      "streamId": streamId,
-    });
+    await _platformInstance.resume(poolId, streamId);
   }
 
   /// Sets volume for playing sound identified by [soundId] or [streamId]
@@ -216,12 +201,12 @@ class Soundpool {
   /// 
   /// ## web
   /// [volumeLeft] and [volumeRight] pair has no effect.
-  Future setVolume(
+  Future<void> setVolume(
       {int soundId,
       int streamId,
       double volume,
       double volumeLeft,
-      double volumeRight}) {
+      double volumeRight}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     assert(
         soundId != null || streamId != null,
@@ -239,20 +224,14 @@ class Soundpool {
     if (volume != null && volumeRight == null) {
       volumeRight = volume;
     }
-    return _soundpoolId.future
-        .then((poolId) => _channel.invokeMethod("setVolume", {
-              "poolId": poolId,
-              "soundId": soundId,
-              "streamId": streamId,
-              "volumeLeft": volumeLeft,
-              "volumeRight": volumeRight,
-            }));
+    await _soundpoolId.future
+        .then((poolId) => _platformInstance.setVolume(poolId, soundId, streamId, volumeLeft, volumeRight));
   }
 
   /// Sets playback rate. A value of 1.0 means normal speed, 0.5 - half speed, 2.0 - double speed.
   /// 
   /// Available value range: (0.5 - 2.0)
-  Future setRate({int streamId, double playbackRate}) {
+  Future<void> setRate({int streamId, double playbackRate}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     assert(
          streamId != null,
@@ -263,21 +242,17 @@ class Soundpool {
     assert(playbackRate >= 0.5 && playbackRate <= 2.0, 
     "'playbackRate' has to be value in (0.5 - 2.0) range",
     );
-    return _soundpoolId.future
-        .then((poolId) => _channel.invokeMethod("setRate", {
-              "poolId": poolId,
-              "streamId": streamId,
-              "rate": playbackRate,
-        }));
+    await _soundpoolId.future
+        .then((poolId) => _platformInstance.setRate(poolId, streamId, playbackRate));
   }
 
   /// Releases loaded sounds
   ///
   /// Should be called to clear buffered sounds
-  Future release() {
+  Future<void> release() async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    return _soundpoolId.future
-        .then((poolId) => _channel.invokeMethod("release", {"poolId": poolId}));
+    await _soundpoolId.future
+        .then((poolId) => _platformInstance.release(poolId));
   }
 
   /// Disposes soundpool
@@ -285,9 +260,7 @@ class Soundpool {
   /// The Soundpool instance is not usable anymore
   void dispose() {
     _soundpoolId.future.then(
-        (poolId) => _channel.invokeMethod("dispose", {
-              "poolId": poolId,
-            }),
+        (poolId) => _platformInstance.dispose(poolId),
         onError: (_) {});
     _disposed = true;
   }
@@ -296,8 +269,7 @@ class Soundpool {
 
   /// Connects to native Soundpool instance
   _connect() async {
-    final int id = await _channel.invokeMethod("initSoundpool",
-        {"maxStreams": _maxStreams, "streamType": _streamType.index});
+    final int id = await _platformInstance.init(_streamType.index, _maxStreams);
     if (id >= 0) {
       _soundpoolId.complete(id);
     } else {
