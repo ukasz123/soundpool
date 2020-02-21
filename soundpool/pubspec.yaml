@@ -13,8 +13,7 @@ dependencies:
 
   soundpool_platform_interface: ^1.0.0
   
-  soundpool_web: 
-    path: ../soundpool_web
+  soundpool_web: ^1.0.0
     
 flutter:
   plugin:
