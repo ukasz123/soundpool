@@ -71,28 +71,28 @@ class SoundpoolPlugin extends SoundpoolPlatform {
   @override
   Future<void> stop(int poolId, int streamId) async {
     _AudioContextWrapper wrapper = _pool[poolId];
-        return await wrapper.stop(streamId);
+    return await wrapper.stop(streamId);
   }
-@override
-Future<void> setVolume(int poolId, int soundId, int streamId, double volumeLeft,
-      double volumeRight) async {
-        _AudioContextWrapper wrapper = _pool[poolId];
-        if (streamId == null) {
-          await wrapper.setVolume(soundId, volumeLeft, volumeRight);
-        } else {
-          await wrapper.setStreamVolume(streamId, volumeLeft, volumeRight);
-        }
-      }
 
-      @override 
-      Future<void> setRate(int poolId, int streamId, double playbackRate) async {
-        _AudioContextWrapper wrapper = _pool[poolId];
-        wrapper.setStreamRate(streamId, playbackRate ?? 1.0);
-      }
+  @override
+  Future<void> setVolume(int poolId, int soundId, int streamId,
+      double volumeLeft, double volumeRight) async {
+    _AudioContextWrapper wrapper = _pool[poolId];
+    if (streamId == null) {
+      await wrapper.setVolume(soundId, volumeLeft, volumeRight);
+    } else {
+      await wrapper.setStreamVolume(streamId, volumeLeft, volumeRight);
+    }
+  }
+
+  @override
+  Future<void> setRate(int poolId, int streamId, double playbackRate) async {
+    _AudioContextWrapper wrapper = _pool[poolId];
+    wrapper.setStreamRate(streamId, playbackRate ?? 1.0);
+  }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
     switch (call.method) {
-      
       case 'setRate':
         // {
         //       "poolId": poolId,

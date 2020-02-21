@@ -1,3 +1,5 @@
+## 1.0.1
+* Homepage url fix
 ## 1.0.0 (21-02-2020)
 * Migrated to use platform interface
 
