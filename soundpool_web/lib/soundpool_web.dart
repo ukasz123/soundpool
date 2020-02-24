@@ -29,6 +29,7 @@ class SoundpoolPlugin extends SoundpoolPlatform {
 
   @override
   Future<int> init(int streamType, int maxStreams) async {
+    _checkSupported();
     // stream type and streams limit are not supported
     var wrapperIndex = _pool.length + 1;
     _pool[wrapperIndex] = _AudioContextWrapper();
