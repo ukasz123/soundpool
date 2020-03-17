@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:web_audio' as audio;
 import 'dart:typed_data';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:http/http.dart' as http;
 import 'package:soundpool_platform_interface/soundpool_platform_interface.dart';
@@ -66,7 +65,7 @@ class SoundpoolPlugin extends SoundpoolPlatform {
   @override
   Future<int> play(int poolId, int soundId, int repeat, double rate) async {
     _AudioContextWrapper wrapper = _pool[poolId];
-    return await wrapper.play(soundId, rate: rate);
+    return await wrapper.play(soundId, rate: rate, repeat: repeat);
   }
 
   @override
@@ -92,28 +91,8 @@ class SoundpoolPlugin extends SoundpoolPlatform {
     wrapper.setStreamRate(streamId, playbackRate ?? 1.0);
   }
 
-  Future<dynamic> handleMethodCall(MethodCall call) async {
-    switch (call.method) {
-      case 'setRate':
-        // {
-        //       "poolId": poolId,
-        //       "streamId": streamId,
-        //       "rate": playbackRate,
-        // }
-        int id = call.arguments['poolId'];
-        _AudioContextWrapper wrapper = _pool[id];
-        var streamId = call.arguments['streamId'] as int;
-        double rate = call.arguments['rate'] as double ?? 1.0;
-        wrapper.setStreamRate(streamId, rate);
-        return;
-
-      default:
-        throw PlatformException(
-            code: 'Unimplemented',
-            details: "The soundpool plugin for web doesn't implement "
-                "the method '${call.method}'");
-    }
-  }
+  @override
+  Future<void> pause(int poolId, int streamId) => stop(poolId, streamId);
 }
 
 class _AudioContextWrapper {
@@ -142,7 +121,7 @@ class _AudioContextWrapper {
     return await load(buffer.buffer);
   }
 
-  Future<int> play(int soundId, {double rate = 1.0}) async {
+  Future<int> play(int soundId, {double rate = 1.0, int repeat = 0}) async {
     _CachedAudioSettings cachedAudio = _cache[soundId];
     audio.AudioBuffer audioBuffer = cachedAudio.buffer;
     var playbackRate = rate ?? 1.0;
@@ -169,8 +148,15 @@ class _AudioContextWrapper {
       subscription: subscription,
       soundId: soundId,
     );
+    // repeat setup: loop sound when repeat is a non-zero value, -1 means infinite loop, positive number means number of extra repeats
+    sampleSource.loop = repeat != 0;
 
     sampleSource.start();
+
+    if (repeat > 0) {
+      sampleSource
+          .stop(audioContext.currentTime + audioBuffer.duration * (repeat + 1));
+    }
     return streamId;
   }
 
