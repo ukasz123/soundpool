@@ -7,6 +7,18 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         let channel = FlutterMethodChannel(name: "pl.ukaszapps/soundpool", binaryMessenger: registrar.messenger())
         let instance = SwiftSoundpoolPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            if #available(iOS 10.0, *) {
+                try audioSession.setCategory(AVAudioSession.Category.playback, mode: AVAudioSession.Mode.default, options: [AVAudioSession.CategoryOptions.allowAirPlay, AVAudioSession.CategoryOptions.mixWithOthers])
+            } else {
+                try audioSession.setCategory(AVAudioSession.Category.playback, options: [AVAudioSession.CategoryOptions.mixWithOthers])
+            }
+        }
+        catch{
+            print("Unexpected error: \(error).")
+        }
+        
     }
     private lazy var wrappers = [SwiftSoundpoolPlugin.SoundpoolWrapper]()
     
