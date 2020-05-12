@@ -7,20 +7,21 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         let channel = FlutterMethodChannel(name: "pl.ukaszapps/soundpool", binaryMessenger: registrar.messenger())
         let instance = SwiftSoundpoolPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            if #available(iOS 10.0, *) {
-                try audioSession.setCategory(AVAudioSession.Category.playback, mode: AVAudioSession.Mode.default, options: [AVAudioSession.CategoryOptions.allowAirPlay, AVAudioSession.CategoryOptions.mixWithOthers])
-            } else {
-                try audioSession.setCategory(AVAudioSession.Category.playback, options: [AVAudioSession.CategoryOptions.mixWithOthers])
-            }
-        }
-        catch{
-            print("Unexpected error: \(error).")
-        }
-        
+        configureAudioSession()
     }
     private lazy var wrappers = [SwiftSoundpoolPlugin.SoundpoolWrapper]()
+    
+    public static func configureAudioSession(){
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setActive(false)
+            try audioSession.setCategory(AVAudioSession.Category.playback)
+            try audioSession.setActive(true)
+        }
+        catch {
+            print("Unexpected error: \(error).")
+        }
+    }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
@@ -137,6 +138,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                         result(0) // failed to play sound
                     }
                 } catch {
+                    print("Unexpected error play: \(error).")
                     result(0)
                 }
             case "pause":
