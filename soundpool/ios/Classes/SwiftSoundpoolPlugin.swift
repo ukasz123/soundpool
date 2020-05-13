@@ -14,9 +14,11 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
     public static func configureAudioSession(){
         do {
             let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setActive(false)
-            try audioSession.setCategory(AVAudioSession.Category.playback)
-            try audioSession.setActive(true)
+            if #available(iOS 10.0, *) {
+                try audioSession.setCategory(AVAudioSession.Category.playback, mode: AVAudioSession.Mode.default, options: [AVAudioSession.CategoryOptions.allowAirPlay, AVAudioSession.CategoryOptions.mixWithOthers])
+            } else {
+                try audioSession.setCategory(AVAudioSession.Category.playback, options: [AVAudioSession.CategoryOptions.mixWithOthers])
+            }
         }
         catch {
             print("Unexpected error: \(error).")
