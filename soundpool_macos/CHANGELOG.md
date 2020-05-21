@@ -1,4 +1,4 @@
-## 0.2.1
+## 0.2.2
 * Bugfix: sound not played anymore after stopping
 
 ## 0.2.0
