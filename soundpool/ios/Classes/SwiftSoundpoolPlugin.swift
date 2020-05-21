@@ -66,20 +66,34 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 }
             case "loadUri":
                 let soundUri = attributes["uri"] as! String
-                do {
-                    let url = URL(string: soundUri)
-                    if (url != nil){
-                        let cachedSound = try Data(contentsOf: url!)
-                        let audioPlayer = try AVAudioPlayer(data: cachedSound)
-                        audioPlayer.enableRate = true
-                        audioPlayer.prepareToPlay()
-                        let index = soundpool.count
-                        soundpool.append(audioPlayer)
-                        result(index)
-                    } else {
-                        result(-1)
+                
+                let url = URL(string: soundUri)
+                if (url != nil){
+                    DispatchQueue.global(qos: .utility).async {
+                        do {
+                            let cachedSound = try Data(contentsOf: url!, options: NSData.ReadingOptions.mappedIfSafe)
+                            DispatchQueue.main.async {
+                                var value:Int = -1
+                                do {
+                                    let audioPlayer = try AVAudioPlayer(data: cachedSound)
+                                    audioPlayer.enableRate = true
+                                    audioPlayer.prepareToPlay()
+                                    let index = self.self.soundpool.count
+                                    self.self.soundpool.append(audioPlayer)
+                                    value = index
+                                } catch {
+                                    print("Unexpected error while preparing player: \(error).")
+                                }
+                                result(value)
+                            }
+                        } catch {
+                            print("Unexpected error while downloading file: \(error).")
+                            DispatchQueue.main.async {
+                                result(-1)
+                            }
+                        }
                     }
-                } catch {
+                } else {
                     result(-1)
                 }
             case "play":
@@ -145,12 +159,13 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 }
             case "stop":
                 let streamId = attributes["streamId"] as! Int
-                if let audioPlayer = playerByStreamId(streamId: streamId)?.player {
-                    audioPlayer.stop()
+                if let nowPlaying = playerByStreamId(streamId: streamId) {
+                    let audioPlayer = nowPlaying.player
+                    audioPlayer.pause()
                     result(streamId)
                     // resetting player to the begin of the track
                     audioPlayer.currentTime = 0.0
-                    audioPlayer.prepareToPlay()
+                    nowPlaying.delegate.decreaseCounter()
                 } else {
                     result(-1)
                 }
@@ -211,7 +226,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
                 decreaseCounter()
             }
-            private func decreaseCounter(){
+            func decreaseCounter(){
                 pool.streamsCount[soundId] = (pool.streamsCount[soundId] ?? 1) - 1
                 let toRemove = pool.nowPlaying.filter({$0.delegate == self})
                 toRemove.forEach {
