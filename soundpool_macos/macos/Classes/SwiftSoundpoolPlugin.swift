@@ -176,6 +176,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                     result(-1)
                     break
                 }
+              
                 if let nowPlaying = playerByStreamId(streamId: streamId) {
                     let audioPlayer = nowPlaying.player
                     audioPlayer.pause()
@@ -256,6 +257,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
                 decreaseCounter()
             }
+          
             func decreaseCounter() {
                 pool.streamsCount[soundId] = (pool.streamsCount[soundId] ?? 1) - 1
                 let toRemove = pool.nowPlaying.filter({$0.delegate == self})
