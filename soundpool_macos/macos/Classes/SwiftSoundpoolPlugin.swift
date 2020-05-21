@@ -83,12 +83,12 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                                     self.self.soundpool.append(audioPlayer)
                                     value = index
                                 } catch {
-                                    print("Unexpected error: \(error).")
+                                    print("Unexpected error while preparing player: \(error).")
                                 }
                                 result(value)
                             }
                         } catch {
-                            print("Unexpected error: \(error).")
+                            print("Unexpected error while downloading file: \(error).")
                             DispatchQueue.main.async {
                                 result(-1)
                             }
@@ -176,12 +176,14 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                     result(-1)
                     break
                 }
-                if let audioPlayer = playerByStreamId(streamId: streamId)?.player {
-                    audioPlayer.stop()
-                    result(streamId)
+              
+                if let nowPlaying = playerByStreamId(streamId: streamId) {
+                    let audioPlayer = nowPlaying.player
+                    audioPlayer.pause()
                     // resetting player to the begin of the track
                     audioPlayer.currentTime = 0.0
-                    audioPlayer.prepareToPlay()
+                    nowPlaying.delegate.decreaseCounter()
+                    result(streamId)
                 } else {
                     result(-1)
                 }
@@ -255,7 +257,8 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
                 decreaseCounter()
             }
-            private func decreaseCounter(){
+          
+            func decreaseCounter() {
                 pool.streamsCount[soundId] = (pool.streamsCount[soundId] ?? 1) - 1
                 let toRemove = pool.nowPlaying.filter({$0.delegate == self})
                 toRemove.forEach {
