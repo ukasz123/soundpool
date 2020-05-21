@@ -211,7 +211,7 @@ class _MyAppState extends State<MyApp> {
     });
     await pool.setVolume(soundId: sounds.dicesSoundId, volume: sounds.volume);
     sounds.dicesSoundFromUriId = await pool.loadUri(
-        "https://github.com/ukasz123/soundpool/raw/master/example/sounds/dices.m4a");
+        "https://raw.githubusercontent.com/ukasz123/soundpool/master/soundpool/example/sounds/dices.m4a");
     print(
         "stream = ${pool.streamType}: dicesSoundId = ${sounds.dicesSoundId}, dicesSoundFromUri = ${sounds.dicesSoundFromUriId}");
     return;
