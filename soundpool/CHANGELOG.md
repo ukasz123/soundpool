@@ -1,3 +1,6 @@
+### 1.1.1
+* Bugfix (iOS): `stop()` not working correctly sometimes
+
 ## 1.1.0
 * **MacOS support**
 * Bugfix (iOS): sound not played anymore after calling `stop()`

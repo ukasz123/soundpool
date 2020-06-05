@@ -39,11 +39,13 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
     class SoundpoolWrapper : NSObject {
         private var maxStreams: Int
         
+        private var streamIdProvider = Atomic<Int>(0)
+        
         private lazy var soundpool = [AVAudioPlayer]()
         
         private lazy var streamsCount: Dictionary<Int, Int> = [Int: Int]()
         
-        private lazy var nowPlaying = [NowPlaying]()
+        private lazy var nowPlaying: Dictionary<Int, NowPlaying> = [Int: NowPlaying]()
         
         init(_ maxStreams: Int){
             self.maxStreams = maxStreams
@@ -51,7 +53,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         
         public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
             let attributes = call.arguments as! NSDictionary
-            print("\(call.method): \(attributes)")
+//            print("\(call.method): \(attributes)")
             switch call.method {
             case "load":
                 let rawSound = attributes["rawSound"] as! FlutterStandardTypedData
@@ -108,50 +110,45 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 var audioPlayer = playerBySoundId(soundId: soundId)
                 do {
                     let currentCount = streamsCount[soundId] ?? 0
+
                     if (currentCount >= maxStreams){
                         result(0)
                         break
                     }
-                    if (times != audioPlayer.numberOfLoops || currentCount > 0){
-                        // lets recreate the audioPlayer - setting numberOfLoops has initially no effect
-                        
-                        if let previousData = audioPlayer.data {
-                            audioPlayer = try AVAudioPlayer(data: previousData)
-                        } else if let previousUrl = audioPlayer.url {
-                            audioPlayer = try AVAudioPlayer(contentsOf: previousUrl)
-                        }
-                        
-                        audioPlayer.numberOfLoops = times ?? 0
-                        audioPlayer.enableRate = true
-                        audioPlayer.prepareToPlay()
-                    }
-                    let nowPlayingData: NowPlaying
                     
-                    if (audioPlayer.delegate == nil){
-                        let delegate = SoundpoolDelegate(pool: self, soundId: soundId)
-                        audioPlayer.delegate = delegate
-                        nowPlayingData =  NowPlaying(player: audioPlayer, delegate: delegate)
-                    } else {
-                        nowPlayingData = NowPlaying(player: audioPlayer, delegate: audioPlayer.delegate as! SwiftSoundpoolPlugin.SoundpoolWrapper.SoundpoolDelegate)
-                    }
+                    let nowPlayingData: NowPlaying
+                    let streamId: Int = streamIdProvider.increment()
+                    
+                    let delegate = SoundpoolDelegate(pool: self, soundId: soundId, streamId: streamId)
+                    audioPlayer.delegate = delegate
+                    nowPlayingData =  NowPlaying(player: audioPlayer, delegate: delegate)
+                    
+                    audioPlayer.numberOfLoops = times ?? 0
+                    audioPlayer.enableRate = true
                     audioPlayer.rate = Float(rate)
                     
                     if (audioPlayer.play()) {
                         streamsCount[soundId] = currentCount + 1
-                        nowPlaying.append(nowPlayingData)
-                        result(nowPlaying.count)
+                        nowPlaying[streamId] = nowPlayingData
+                        result(streamId)
                     } else {
                         result(0) // failed to play sound
                     }
+                    // lets recreate the audioPlayer for the next request - setting numberOfLoops has initially no effect
+                    
+                    if let previousData = audioPlayer.data {
+                        audioPlayer = try AVAudioPlayer(data: previousData)
+                    } else if let previousUrl = audioPlayer.url {
+                        audioPlayer = try AVAudioPlayer(contentsOf: previousUrl)
+                    }
+                    
+                    audioPlayer.prepareToPlay()
+                    soundpool[soundId] = audioPlayer
                 } catch {
                     result(0)
                 }
             case "pause":
                 let streamId = attributes["streamId"] as! Int
-                if (streamId <= 0){
-                    result(-1)
-                    break
-                }
                 if let playingData = playerByStreamId(streamId: streamId) {
                     playingData.player.pause()
                     result(streamId)
@@ -160,10 +157,6 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 }
             case "resume":
                 let streamId = attributes["streamId"] as! Int
-                if (streamId <= 0){
-                    result(-1)
-                    break
-                }
                 if let playingData = playerByStreamId(streamId: streamId) {
                     playingData.player.play()
                     result(streamId)
@@ -172,18 +165,14 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 }
             case "stop":
                 let streamId = attributes["streamId"] as! Int
-                if (streamId <= 0){
-                    result(-1)
-                    break
-                }
-              
                 if let nowPlaying = playerByStreamId(streamId: streamId) {
                     let audioPlayer = nowPlaying.player
-                    audioPlayer.pause()
-                    // resetting player to the begin of the track
-                    audioPlayer.currentTime = 0.0
-                    nowPlaying.delegate.decreaseCounter()
+                    audioPlayer.stop()
                     result(streamId)
+                    // removing player
+                    self.nowPlaying.removeValue(forKey: streamId)
+                    nowPlaying.delegate.decreaseCounter()
+                    audioPlayer.delegate = nil
                 } else {
                     result(-1)
                 }
@@ -193,30 +182,17 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 let volume = attributes["volumeLeft"] as! Double
                 
                 var audioPlayer: AVAudioPlayer? = nil;
-                
                 if (streamId != nil){
-                    guard (streamId ?? 0 > 0) else {
-                        result(-1)
-                        break
-                    }
                     audioPlayer = playerByStreamId(streamId: streamId!)?.player
                 } else if (soundId != nil){
-                    guard (soundId ?? -1 > -1) else {
-                        result(-1)
-                        break
-                    }
                     audioPlayer = playerBySoundId(soundId: soundId!)
                 }
                 audioPlayer?.volume = Float(volume)
                 result(nil)
             case "setRate":
-                let streamId = attributes["streamId"] as? Int
+                let streamId = attributes["streamId"] as! Int
                 let rate = (attributes["rate"] as? Double) ?? 1.0
-                guard (streamId ?? 0 > 0) else {
-                    result(-1)
-                    break
-                }
-                let audioPlayer: AVAudioPlayer? = playerByStreamId(streamId: streamId!)?.player
+                let audioPlayer: AVAudioPlayer? = playerByStreamId(streamId: streamId)?.player
                 audioPlayer?.rate = Float(rate)
                 result(nil)
             case "release": // TODO this should distinguish between soundpools for different types of audio playbacks
@@ -234,11 +210,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             }
         }
         private func playerByStreamId(streamId: Int) -> NowPlaying? {
-            // converting streamId to index
-            if (streamId > nowPlaying.count){
-                return nil
-            }
-            let audioPlayer = nowPlaying[streamId-1]
+            let audioPlayer = nowPlaying[streamId]
             return audioPlayer
         }
         
@@ -249,24 +221,19 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         
         private class SoundpoolDelegate: NSObject, AVAudioPlayerDelegate {
             private var soundId: Int
+            private var streamId: Int
             private var pool: SoundpoolWrapper
-            init(pool: SoundpoolWrapper, soundId: Int) {
+            init(pool: SoundpoolWrapper, soundId: Int, streamId: Int) {
                 self.soundId = soundId
                 self.pool = pool
+                self.streamId = streamId
             }
             func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
                 decreaseCounter()
             }
-          
-            func decreaseCounter() {
+            func decreaseCounter(){
                 pool.streamsCount[soundId] = (pool.streamsCount[soundId] ?? 1) - 1
-                let toRemove = pool.nowPlaying.filter({$0.delegate == self})
-                toRemove.forEach {
-                    $0.player.delegate = nil
-                }
-                pool.nowPlaying.removeAll{
-                    $0.delegate == self
-                }
+                pool.nowPlaying.removeValue(forKey: streamId)
             }
         }
         
