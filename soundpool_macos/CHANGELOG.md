@@ -1,3 +1,6 @@
+## 0.2.4
+* Bugfix: app not building due to missing class
+
 ## 0.2.3
 * Bugfix (#37) - stop not working correctly on iOS/macOS
 

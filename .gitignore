@@ -12,4 +12,8 @@ soundpool_macos/.idea/workspace.xml
 soundpool_macos/.idea/libraries/Dart_SDK.xml
 soundpool_macos/.idea/libraries/Flutter_for_Android.xml
 soundpool_macos/.idea/runConfigurations/example_lib_main_dart.xml
-soundpool_macos
+soundpool_macos/pubspec.lock
+soundpool_macos/ios/Flutter/flutter_export_environment.sh
+soundpool_macos/ios/Flutter/Generated.xcconfig
+soundpool_macos/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
+soundpool_macos/macos/Flutter/ephemeral/flutter_export_environment.sh
