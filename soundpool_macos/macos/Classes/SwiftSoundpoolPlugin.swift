@@ -107,7 +107,10 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                     result(0)
                     break
                 }
-                var audioPlayer = playerBySoundId(soundId: soundId)
+                guard var audioPlayer = playerBySoundId(soundId: soundId) else {
+                    result(0)
+                    break
+                }
                 do {
                     let currentCount = streamsCount[soundId] ?? 0
 
@@ -214,7 +217,10 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             return audioPlayer
         }
         
-        private func playerBySoundId(soundId: Int) -> AVAudioPlayer {
+        private func playerBySoundId(soundId: Int) -> AVAudioPlayer? {
+            if (soundpool.count <= soundId || soundId < 0){
+                return nil
+            }
             let audioPlayer = soundpool[soundId]
             return audioPlayer
         }

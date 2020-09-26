@@ -2,33 +2,21 @@ PODS:
   - Flutter (1.0.0)
   - soundpool (0.0.1):
     - Flutter
-  - soundpool_macos (0.0.1):
-    - Flutter
-  - soundpool_web (0.0.1):
-    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - soundpool (from `.symlinks/plugins/soundpool/ios`)
-  - soundpool_macos (from `.symlinks/plugins/soundpool_macos/ios`)
-  - soundpool_web (from `.symlinks/plugins/soundpool_web/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   soundpool:
     :path: ".symlinks/plugins/soundpool/ios"
-  soundpool_macos:
-    :path: ".symlinks/plugins/soundpool_macos/ios"
-  soundpool_web:
-    :path: ".symlinks/plugins/soundpool_web/ios"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   soundpool: c7f4422ca206e77f8900ed3c4ee6a6ff5a0e38a9
-  soundpool_macos: 36b3b9047369167e8b68ef1e1b6f25fb7c893825
-  soundpool_web: bd713866c1993a5bfd40bfc875e7ebb30cbe8342
 
-PODFILE CHECKSUM: 1b66dae606f75376c5f2135a8290850eeb09ae83
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.3
