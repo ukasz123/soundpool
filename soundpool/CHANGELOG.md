@@ -1,3 +1,7 @@
+### 1.1.2
+* Bugfix (iOS): Guard against invalid values of `soundId`
+* Add note about error value returned from `loadXXX` methods
+
 ### 1.1.1
 * Bugfix (iOS): `stop()` not working correctly sometimes
 

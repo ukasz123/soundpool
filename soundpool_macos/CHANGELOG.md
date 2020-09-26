@@ -1,3 +1,6 @@
+## 0.2.5
+* Bugfix: guard against invalid values of `soundId` parameter
+
 ## 0.2.4
 * Bugfix: app not building due to missing class
 
