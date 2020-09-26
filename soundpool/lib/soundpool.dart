@@ -37,7 +37,7 @@ class Soundpool {
   /// load(await rootBundle.load("sounds/dices.m4a")); // loads file from assets
   /// ```
   ///
-  /// Returns soundId for future use in [play] (soundId > -1)
+  /// Returns soundId for future use in [play] (soundId > -1) or `-1` when sound file failed to load
   ///
   /// ## web
   /// [priority] is ignored.
@@ -49,7 +49,7 @@ class Soundpool {
   ///
   /// Loads sound data and buffers it for future playing.
   ///
-  /// Returns soundId for future use in [play] (soundId > -1)
+  /// Returns soundId for future use in [play] (soundId > -1) or `-1` when sound data failed to load
   ///
   /// ## web
   /// [priority] is ignored.
@@ -65,7 +65,7 @@ class Soundpool {
   /// Prepares sound for playing
   ///
   /// Loads sound data from file pointed by [uri]
-  /// Returns soundId for future use in [play] (soundId > -1)
+  /// Returns soundId for future use in [play] (soundId > -1) or `-1` when sound file failed to load
   ///
   /// ## web
   /// [priority] is ignored.
@@ -83,7 +83,7 @@ class Soundpool {
   /// loadAndPlay(await rootBundle.load("sounds/dices.m4a")); // loads file from assets
   /// ```
   ///
-  /// Returns soundId for future use in [play] (soundId > -1)
+  /// Returns soundId for future use in [play] (soundId > -1) or `-1` when sound file failed to load
   ///
   /// See also:
   ///
@@ -107,7 +107,7 @@ class Soundpool {
   /// Loads sound data, buffers it for future playing and starts playing immediately
   /// when loaded.
   ///
-  /// Returns soundId for future use in [play] (soundId > -1)
+  /// Returns soundId for future use in [play] (soundId > -1) or `-1` when sound file failed to load
   ///
   /// See also:
   ///
@@ -131,7 +131,7 @@ class Soundpool {
   ///
   /// Loads sound data from file pointed by [uri]
   ///
-  /// Returns soundId for future use in [play] (soundId > -1)
+  /// Returns soundId for future use in [play] (soundId > -1) or `-1` when sound file failed to load
   ///
   /// See also:
   ///
