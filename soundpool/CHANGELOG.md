@@ -1,3 +1,6 @@
+### 1.1.3
+* Bugfix (iOS & MacOS): Guard against invalid values of `poolId`
+
 ### 1.1.2
 * Bugfix (iOS): Guard against invalid values of `soundId`
 * Add note about error value returned from `loadXXX` methods

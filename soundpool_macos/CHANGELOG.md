@@ -1,3 +1,6 @@
+## 0.2.6
+* Bugfix: guard against invalid values of `poolId` parameter
+
 ## 0.2.5
 * Bugfix: guard against invalid values of `soundId` parameter
 
