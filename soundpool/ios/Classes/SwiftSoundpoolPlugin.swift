@@ -24,17 +24,38 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         case "dispose":
             let attributes = call.arguments as! NSDictionary
             let index = attributes["poolId"] as! Int
-            let wrapper = wrappers[index]
+            
+            guard let wrapper = wrapperById(id: index) else {
+                print("Dispose attempt on not available pool (id: \(index)).")
+                result(FlutterError( code: "invalidArgs",
+                                     message: "Invalid poolId",
+                                     details: "Pool with id \(index) not found" ))
+                break
+            }
             wrapper.stopAllStreams()
             wrappers.remove(at: index)
             result(nil)
         default:
             let attributes = call.arguments as! NSDictionary
             let index = attributes["poolId"] as! Int
-            let wrapper = wrappers[index]
+            
+            guard let wrapper = wrapperById(id: index) else {
+                print("Action '\(call.method)' attempt on not available pool (id: \(index)).")
+                result(FlutterError( code: "invalidArgs",
+                                     message: "Invalid poolId",
+                                     details: "Pool with id \(index) not found" ))
+                break
+            }
             wrapper.handle(call, result: result)
         }
-        
+    }
+    
+    private func wrapperById(id: Int) -> SwiftSoundpoolPlugin.SoundpoolWrapper? {
+        if (id >= wrappers.count || id < 0){
+            return nil
+        }
+        let wrapper = wrappers[id]
+        return wrapper
     }
     
     class SoundpoolWrapper : NSObject {
