@@ -50,6 +50,14 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         
     }
     
+    private func wrapperById(id: Int) -> SwiftSoundpoolPlugin.SoundpoolWrapper? {
+        if (id >= wrappers.count || id < 0){
+            return nil
+        }
+        let wrapper = wrappers[id]
+        return wrapper
+    }
+    
     class SoundpoolWrapper : NSObject {
         private var maxStreams: Int
         
