@@ -4,7 +4,7 @@ import 'package:soundpool/soundpool.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
-Soundpool _soundpool;
+late Soundpool _soundpool;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +13,7 @@ Future<void> main() async {
 }
 
 class SimpleApp extends StatefulWidget {
-  SimpleApp({Key key}) : super(key: key);
+  SimpleApp({Key? key}) : super(key: key);
 
   @override
   _SimpleAppState createState() => _SimpleAppState();
@@ -21,7 +21,7 @@ class SimpleApp extends StatefulWidget {
 
 class _SimpleAppState extends State<SimpleApp> {
 
-  int _alarmSoundStreamId;
+  int? _alarmSoundStreamId;
   int _cheeringStreamId = -1;
 
   String get _cheeringUrl => kIsWeb ? '/c-c-1.mp3' : 'https://raw.githubusercontent.com/ukasz123/soundpool/feature/web_support/example/web/c-c-1.mp3';
@@ -32,8 +32,8 @@ class _SimpleAppState extends State<SimpleApp> {
   }
   double _volume = 1.0;
   double _rate = 1.0;
-  Future<int> _soundId;
-  Future<int> _cheeringId;
+  late Future<int> _soundId;
+  late Future<int> _cheeringId;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -112,13 +112,13 @@ class _SimpleAppState extends State<SimpleApp> {
 
   Future<void> _pauseSound() async {
     if (_alarmSoundStreamId != null){
-      await _soundpool.pause(_alarmSoundStreamId);
+      await _soundpool.pause(_alarmSoundStreamId!);
     }
   }
 
   Future<void> _stopSound() async {
     if (_alarmSoundStreamId != null){
-      await _soundpool.stop(_alarmSoundStreamId);
+      await _soundpool.stop(_alarmSoundStreamId!);
     }
   }
 
