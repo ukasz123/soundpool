@@ -200,7 +200,7 @@ class _AudioContextWrapper {
     _cache.clear();
   }
 
-  Future<void> dispose() {
+  Future<void> dispose() async {
     release();
     audioContext?.close();
   }
