@@ -9,17 +9,17 @@ class MethodChannelSoundpoolPlatform extends SoundpoolPlatform {
 
   @override
   Future<int> init(int streamType, int maxStreams) => _channel.invokeMethod(
-      "initSoundpool", {"maxStreams": maxStreams, "streamType": streamType});
+      "initSoundpool", {"maxStreams": maxStreams, "streamType": streamType}) as Future<int>;
 
   @override
   Future<int> loadUri(int poolId, String uri, int priority) =>
       _channel.invokeMethod(
-          "loadUri", {"poolId": poolId, "uri": uri, "priority": priority});
+          "loadUri", {"poolId": poolId, "uri": uri, "priority": priority}) as Future<int>;
 
   @override
   Future<int> loadUint8List(int poolId, Uint8List rawSound, int priority) =>
       _channel.invokeMethod("load",
-          {"poolId": poolId, "rawSound": rawSound, "priority": priority});
+          {"poolId": poolId, "rawSound": rawSound, "priority": priority}) as Future<int>;
 
   @override
   Future<int> play(int poolId, int soundId, int repeat, double rate) async =>
