@@ -51,8 +51,8 @@ class MethodChannelSoundpoolPlatform extends SoundpoolPlatform {
       });
 
   @override
-  Future<void> setVolume(int poolId, int soundId, int streamId,
-          double volumeLeft, double volumeRight) =>
+  Future<void> setVolume(int poolId, int? soundId, int? streamId,
+          double? volumeLeft, double? volumeRight) =>
       _channel.invokeMethod("setVolume", {
         "poolId": poolId,
         "soundId": soundId,

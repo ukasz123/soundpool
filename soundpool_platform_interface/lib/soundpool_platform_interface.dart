@@ -61,8 +61,8 @@ abstract class SoundpoolPlatform extends PlatformInterface {
     throw UnimplementedError('resume() has not been implemented');
   }
 
-  Future<void> setVolume(int poolId, int soundId, int streamId,
-      double volumeLeft, double volumeRight) {
+  Future<void> setVolume(int poolId, int? soundId, int? streamId,
+      double? volumeLeft, double? volumeRight) {
     throw UnimplementedError('setVolume() has not been implemented');
   }
 
