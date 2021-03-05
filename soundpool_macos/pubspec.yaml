@@ -12,7 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  soundpool_platform_interface: ^1.0.1
+  soundpool_platform_interface: 
+      path : ../soundpool_platform_interface
+
 
 dev_dependencies:
   flutter_test:
