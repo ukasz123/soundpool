@@ -178,7 +178,7 @@ class _MyAppState extends State<MyApp> {
             .map((streamType) => BottomNavigationBarItem(
                 backgroundColor: Colors.lightBlueAccent,
                 icon: Icon(Icons.pages),
-                title: Text(streamType.toString())))
+                label: streamType.toString()))
             .toList(),
         currentIndex: _selectedIndex,
         onTap: (index) {

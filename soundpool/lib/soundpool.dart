@@ -17,7 +17,7 @@ class Soundpool {
   bool _disposed = false;
 
   Soundpool._([StreamType type = StreamType.music, int maxStreams = 1])
-      : assert(type != null),
+      :
       assert(maxStreams > 0),
         _streamType = type,
         _maxStreams = maxStreams;

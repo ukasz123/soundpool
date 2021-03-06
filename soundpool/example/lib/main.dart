@@ -29,6 +29,7 @@ class _SimpleAppState extends State<SimpleApp> {
   void initState(){
     _soundId = _loadSound();
     _cheeringId = _loadCheering();
+    super.initState();
   }
   double _volume = 1.0;
   double _rate = 1.0;
