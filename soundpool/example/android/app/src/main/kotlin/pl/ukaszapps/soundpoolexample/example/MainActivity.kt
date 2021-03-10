@@ -1,4 +1,4 @@
-package com.example.example
+package pl.ukaszapps.soundpoolexample
 
 import io.flutter.embedding.android.FlutterActivity
 
