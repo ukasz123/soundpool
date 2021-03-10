@@ -211,8 +211,7 @@ class _CachedAudioSettings {
   double volumeLeft;
   double volumeRight;
   _CachedAudioSettings(
-      {required this.buffer, this.volumeLeft = 1.0, this.volumeRight = 1.0})
-      : assert(buffer != null);
+      {required this.buffer, this.volumeLeft = 1.0, this.volumeRight = 1.0});
 }
 
 class _PlayingAudioWrapper {
