@@ -13,8 +13,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List<Soundpool> soundpools = [];
-  Map<Soundpool, SoundsMap> soundsMap;
-  Soundpool _selectedPool;
+  late Map<Soundpool, SoundsMap> soundsMap;
+  Soundpool? _selectedPool;
   int _selectedIndex = 0;
 
   @override
@@ -46,13 +46,13 @@ class _MyAppState extends State<MyApp> {
         body: body,
         floatingActionButton: ready
             ? new FloatingActionButton(
-                onPressed: soundsMap[_selectedPool].playing
+                onPressed: soundsMap[_selectedPool!]!.playing
                     ? pauseStream
-                    : soundsMap[_selectedPool].dicesSoundId != null &&
-                            soundsMap[_selectedPool].dicesSoundId >= 0
+                    : soundsMap[_selectedPool!]!.dicesSoundId != null &&
+                            soundsMap[_selectedPool!]!.dicesSoundId! >= 0
                         ? playSound
                         : null,
-                child: new Icon(soundsMap[_selectedPool].playing
+                child: new Icon(soundsMap[_selectedPool!]!.playing
                     ? Icons.pause_circle_filled
                     : Icons.play_circle_filled),
               )
@@ -66,7 +66,7 @@ class _MyAppState extends State<MyApp> {
       children: <Widget>[
         Positioned(
           top: 8.0,
-          child: Text(_selectedPool.streamType.toString()),
+          child: Text(_selectedPool!.streamType.toString()),
         ),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -77,10 +77,10 @@ class _MyAppState extends State<MyApp> {
               child: new Text('Volume control'),
             ),
             new Slider(
-                value: soundsMap[_selectedPool].volume,
+                value: soundsMap[_selectedPool!]!.volume,
                 onChanged: (newValue) {
                   setState(() {
-                    soundsMap[_selectedPool].volume = newValue;
+                    soundsMap[_selectedPool!]!.volume = newValue;
                     updateVolume();
                   });
                 }),
@@ -90,8 +90,8 @@ class _MyAppState extends State<MyApp> {
             bottom: 16.0,
             left: 16.0,
             child: new FloatingActionButton(
-              onPressed: soundsMap[_selectedPool].dicesSoundFromUriId == null ||
-                      soundsMap[_selectedPool].dicesSoundFromUriId < 0
+              onPressed: soundsMap[_selectedPool!]!.dicesSoundFromUriId == null ||
+                      soundsMap[_selectedPool!]!.dicesSoundFromUriId! < 0
                   ? null
                   : () => playSoundFromUri(),
               child: new Icon(Icons.play_arrow),
@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> {
         soundpools.map((soundpool) => MapEntry(soundpool, SoundsMap())));
     print("Waiting for all pools to initialize themself");
     Future.wait(
-            soundpools.map((pool) => initSoundsForPool(pool, soundsMap[pool])))
+            soundpools.map((pool) => initSoundsForPool(pool, soundsMap[pool]!)))
         .then((_) {
       setState(() {
         _selectedPool = soundpools[_selectedIndex];
@@ -117,16 +117,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> playSound() async {
-    if (soundsMap[_selectedPool].dicesSoundId > -1) {
-      if (soundsMap[_selectedPool].dicesStreamId != null) {
-        await _selectedPool.resume(soundsMap[_selectedPool].dicesStreamId);
+    if (soundsMap[_selectedPool!]!.dicesSoundId! > -1) {
+      if (soundsMap[_selectedPool!]!.dicesStreamId != null) {
+        await _selectedPool!.resume(soundsMap[_selectedPool!]!.dicesStreamId!);
 
-        soundsMap[_selectedPool].dicesStreamId = null; /**/
+        soundsMap[_selectedPool!]!.dicesStreamId = null; /**/
       } else {
-        int streamId = soundsMap[_selectedPool].dicesStreamId =
-            await _selectedPool.play(soundsMap[_selectedPool].dicesSoundId,
+        int streamId = soundsMap[_selectedPool!]!.dicesStreamId =
+            await _selectedPool!.play(soundsMap[_selectedPool!]!.dicesSoundId!,
                 repeat: 4);
-        soundsMap[_selectedPool].playing = true;
+        soundsMap[_selectedPool!]!.playing = true;
         print("Playing sound with stream id: $streamId");
       }
     }
@@ -134,38 +134,38 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> pauseStream() async {
-    if (soundsMap[_selectedPool].dicesStreamId != null) {
-      await _selectedPool.pause(soundsMap[_selectedPool].dicesStreamId);
+    if (soundsMap[_selectedPool!]!.dicesStreamId != null) {
+      await _selectedPool!.pause(soundsMap[_selectedPool!]!.dicesStreamId!);
       setState(() {
-        soundsMap[_selectedPool].playing = false;
+        soundsMap[_selectedPool!]!.playing = false;
       });
     }
   }
 
   void updateVolume() {
-    if (soundsMap[_selectedPool].dicesStreamId != null) {
-      _selectedPool.setVolume(
-          streamId: soundsMap[_selectedPool].dicesStreamId,
-          soundId: soundsMap[_selectedPool].dicesSoundId,
-          volume: soundsMap[_selectedPool].volume);
+    if (soundsMap[_selectedPool!]!.dicesStreamId != null) {
+      _selectedPool!.setVolume(
+          streamId: soundsMap[_selectedPool!]!.dicesStreamId,
+          soundId: soundsMap[_selectedPool!]!.dicesSoundId,
+          volume: soundsMap[_selectedPool!]!.volume);
     } else {
-      _selectedPool.setVolume(
-          soundId: soundsMap[_selectedPool].dicesSoundId,
-          volume: soundsMap[_selectedPool].volume);
+      _selectedPool!.setVolume(
+          soundId: soundsMap[_selectedPool!]!.dicesSoundId,
+          volume: soundsMap[_selectedPool!]!.volume);
     }
   }
 
   void playSoundFromUri() {
-    _selectedPool.play(soundsMap[_selectedPool].dicesSoundFromUriId);
+    _selectedPool!.play(soundsMap[_selectedPool!]!.dicesSoundFromUriId!);
   }
 
   void resetSoundpool() async {
     setState(() {
-      soundsMap[_selectedPool].dicesSoundId = -1;
-      soundsMap[_selectedPool].dicesSoundFromUriId = -1;
+      soundsMap[_selectedPool!]!.dicesSoundId = -1;
+      soundsMap[_selectedPool!]!.dicesSoundFromUriId = -1;
     });
-    _selectedPool.dispose();
-    initSoundsForPool(_selectedPool, soundsMap[_selectedPool]).then((_) {
+    _selectedPool!.dispose();
+    initSoundsForPool(_selectedPool!, soundsMap[_selectedPool!]!).then((_) {
       setState(() {});
     });
   }
@@ -178,7 +178,7 @@ class _MyAppState extends State<MyApp> {
             .map((streamType) => BottomNavigationBarItem(
                 backgroundColor: Colors.lightBlueAccent,
                 icon: Icon(Icons.pages),
-                title: Text(streamType.toString())))
+                label: streamType.toString()))
             .toList(),
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -219,11 +219,11 @@ class _MyAppState extends State<MyApp> {
 }
 
 class SoundsMap {
-  int dicesSoundId;
+  int? dicesSoundId;
 
-  int dicesStreamId;
+  int? dicesStreamId;
 
-  int dicesSoundFromUriId;
+  int? dicesSoundFromUriId;
 
   double volume = 1.0;
 
