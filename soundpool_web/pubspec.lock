@@ -129,10 +129,10 @@ packages:
   soundpool_platform_interface:
     dependency: "direct main"
     description:
-      path: "../soundpool_platform_interface"
-      relative: true
-    source: path
-    version: "1.0.1"
+      name: soundpool_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0-nullsafety.0"
   source_span:
     dependency: transitive
     description:
@@ -191,4 +191,3 @@ packages:
     version: "2.1.0"
 sdks:
   dart: ">=2.12.0 <3.0.0"
-  flutter: ">=1.10.0"

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:soundpool/soundpool.dart';
 
 void main() => runApp(new MyApp());
@@ -11,23 +12,36 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => new _MyAppState();
 }
 
+enum SoundpoolInitialization {
+  idle,
+  inProgress,
+  ready
+}
+
 class _MyAppState extends State<MyApp> {
   List<Soundpool> soundpools = [];
   late Map<Soundpool, SoundsMap> soundsMap;
   Soundpool? _selectedPool;
   int _selectedIndex = 0;
+  late SoundpoolInitialization _initialization = SoundpoolInitialization.idle;
 
   @override
   initState() {
     super.initState();
-    initSoundPools();
+    if (!kIsWeb){
+      initSoundPools();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final ready = (soundpools.length > 0) && _selectedPool != null;
-    final Widget body =
-        ready ? _buildReadyWidget(context) : _buildWaitingWidget(context);
+    Widget body = Center(child: RaisedButton(child: Text('Init'), onPressed: () => initSoundPools(),));
+    if (_initialization == SoundpoolInitialization.ready) {
+      body = _buildReadyWidget(context);
+    }
+    if (_initialization == SoundpoolInitialization.inProgress) {
+      body = _buildWaitingWidget(context);
+    }
     return new MaterialApp(
       home: new Scaffold(
         appBar: new AppBar(
@@ -44,7 +58,7 @@ class _MyAppState extends State<MyApp> {
         ),
         bottomNavigationBar: _buildBottomNavigationBar(context),
         body: body,
-        floatingActionButton: ready
+        floatingActionButton: (_initialization == SoundpoolInitialization.ready)
             ? new FloatingActionButton(
                 onPressed: soundsMap[_selectedPool!]!.playing
                     ? pauseStream
@@ -101,6 +115,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initSoundPools() {
+    setState((){
+      _initialization = SoundpoolInitialization.inProgress;
+    });
     soundpools =
         StreamType.values.map((type) => Soundpool(streamType: type)).toList();
 
@@ -112,6 +129,7 @@ class _MyAppState extends State<MyApp> {
         .then((_) {
       setState(() {
         _selectedPool = soundpools[_selectedIndex];
+        _initialization = SoundpoolInitialization.ready;
       });
     });
   }
