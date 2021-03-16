@@ -1,3 +1,6 @@
+## 2.0.0-nullsafety.0
+Null-safety support 
+
 ### 1.1.3
 * Bugfix (iOS & MacOS): Guard against invalid values of `poolId`
 
