@@ -220,11 +220,11 @@ class Soundpool {
   /// ## web
   /// [volumeLeft] and [volumeRight] pair has no effect.
   Future<void> setVolume(
-      {int soundId,
-      int streamId,
-      double volume,
-      double volumeLeft,
-      double volumeRight}) async {
+      {int? soundId,
+      int? streamId,
+      double? volume,
+      double? volumeLeft,
+      double? volumeRight}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     assert(
         soundId != null || streamId != null,
@@ -252,7 +252,7 @@ class Soundpool {
   /// Sets playback rate. A value of 1.0 means normal speed, 0.5 - half speed, 2.0 - double speed.
   ///
   /// Available value range: (0.5 - 2.0)
-  Future<void> setRate({int streamId, double playbackRate}) async {
+  Future<void> setRate({required int streamId, required double playbackRate}) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     assert(streamId != null, "'streamId' has to be passed");
     assert(playbackRate != null, "'playbackRate' has to be passed");
@@ -365,7 +365,7 @@ class AudioStreamControl {
   /// Sets volume for playing sound identified by [soundId] or [streamId]
   ///
   /// At least [volume] or both [volumeLeft] and [volumeRight] have to be passed
-  Future setVolume({double volume, double volumeLeft, double volumeRight}) {
+  Future setVolume({double? volume, double? volumeLeft, double? volumeRight}) {
     return _pool.setVolume(
         streamId: stream,
         volume: volume,
@@ -376,7 +376,7 @@ class AudioStreamControl {
   /// Sets playback rate. A value of 1.0 means normal speed, 0.5 - half speed, 2.0 - double speed.
   ///
   /// Available value range: (0.5 - 2.0)
-  Future setRate({double playbackRate}) {
+  Future setRate({required double playbackRate}) {
     return _pool.setRate(
       streamId: stream,
       playbackRate: playbackRate,
