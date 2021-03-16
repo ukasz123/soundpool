@@ -5,7 +5,8 @@ homepage: https://github.com/ukasz123/soundpool/tree/master/soundpool_web
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
-
+  flutter: '>=2.0.0'
+  
 dependencies:
   flutter:
     sdk: flutter
