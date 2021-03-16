@@ -1,12 +1,12 @@
 name: soundpool_web
 description: A Flutter Sound Pool for playing short audio files. Sound tracks are cached in memory and played directly from cache.
-version: 1.0.3
+version: 2.0.0-nullsafety.0
 homepage: https://github.com/ukasz123/soundpool/tree/master/soundpool_web
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
-  flutter: ">=1.10.0 <2.0.0"
-
+  sdk: '>=2.12.0 <3.0.0'
+  flutter: '>=2.0.0'
+  
 dependencies:
   flutter:
     sdk: flutter
@@ -14,9 +14,9 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   
-  soundpool_platform_interface: ^1.0.0
+  soundpool_platform_interface: ^2.0.0-nullsafety.0
   
-  http: ^0.12.0+2
+  http: ^0.13.0
 
 dev_dependencies:
   flutter_test:

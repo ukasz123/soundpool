@@ -4,16 +4,52 @@ import 'package:soundpool/soundpool.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
-Soundpool _soundpool;
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  _soundpool = Soundpool();
-  runApp(SimpleApp());
+  runApp(
+    SoundpoolInitializer()
+    );
+}
+
+class SoundpoolInitializer extends StatefulWidget {
+  @override
+  _SoundpoolInitializerState createState() => _SoundpoolInitializerState();
+
+}
+
+class _SoundpoolInitializerState extends State<SoundpoolInitializer> {
+  Soundpool? _pool;
+
+  @override
+  void initState(){
+    super.initState();
+    if (!kIsWeb) {
+      _pool = Soundpool();
+    } 
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_pool == null){
+      return MaterialApp(
+      home: Material(
+        child: Center(
+          child: RaisedButton(
+                    onPressed: () => setState(()=> _pool = Soundpool()),
+                    child: Text("Init Soundpool"),
+                    ),
+        ),
+      ),
+      );
+    } else {
+      return SimpleApp(pool: _pool!);
+    }
+  }
 }
 
 class SimpleApp extends StatefulWidget {
-  SimpleApp({Key key}) : super(key: key);
+  final Soundpool pool;
+  SimpleApp({Key? key, required this.pool}) : super(key: key);
 
   @override
   _SimpleAppState createState() => _SimpleAppState();
@@ -21,19 +57,22 @@ class SimpleApp extends StatefulWidget {
 
 class _SimpleAppState extends State<SimpleApp> {
 
-  int _alarmSoundStreamId;
+  int? _alarmSoundStreamId;
   int _cheeringStreamId = -1;
 
   String get _cheeringUrl => kIsWeb ? '/c-c-1.mp3' : 'https://raw.githubusercontent.com/ukasz123/soundpool/feature/web_support/example/web/c-c-1.mp3';
 
+  Soundpool get _soundpool => widget.pool;
+
   void initState(){
     _soundId = _loadSound();
     _cheeringId = _loadCheering();
+    super.initState();
   }
   double _volume = 1.0;
   double _rate = 1.0;
-  Future<int> _soundId;
-  Future<int> _cheeringId;
+  late Future<int> _soundId;
+  late Future<int> _cheeringId;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -112,13 +151,13 @@ class _SimpleAppState extends State<SimpleApp> {
 
   Future<void> _pauseSound() async {
     if (_alarmSoundStreamId != null){
-      await _soundpool.pause(_alarmSoundStreamId);
+      await _soundpool.pause(_alarmSoundStreamId!);
     }
   }
 
   Future<void> _stopSound() async {
     if (_alarmSoundStreamId != null){
-      await _soundpool.stop(_alarmSoundStreamId);
+      await _soundpool.stop(_alarmSoundStreamId!);
     }
   }
 
