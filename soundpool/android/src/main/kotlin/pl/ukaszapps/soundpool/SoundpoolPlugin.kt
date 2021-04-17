@@ -18,6 +18,7 @@ import java.io.FileOutputStream
 import java.net.URI
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import kotlin.concurrent.thread
 
 
 internal val loadExecutor: Executor = Executors.newCachedThreadPool()
@@ -202,14 +203,19 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                 result.success(null)
             }
             "play" -> {
-                val arguments = call.arguments as Map<String, Any>
-                val soundId: Int = (arguments["soundId"] as Int?)!!
-                val repeat: Int = arguments["repeat"] as Int? ?: 0
-                val rate: Double = arguments["rate"] as Double? ?: 1.0
-                val volumeInfo = volumeSettingsForSoundId(soundId = soundId)
-                val streamId = soundPool.play(soundId, volumeInfo.left, volumeInfo.right, 0,
-                        repeat, rate.toFloat())
-                result.success(streamId)
+                thread {
+                    val arguments = call.arguments as Map<String, Any>
+                    val soundId: Int = (arguments["soundId"] as Int?)!!
+                    val repeat: Int = arguments["repeat"] as Int? ?: 0
+                    val rate: Double = arguments["rate"] as Double? ?: 1.0
+                    val volumeInfo = volumeSettingsForSoundId(soundId = soundId)
+                    val streamId = soundPool.play(soundId, volumeInfo.left, volumeInfo.right, 0,
+                            repeat, rate.toFloat())
+                    ui {
+                        result.success(streamId)
+                    }
+                }
+
             }
             "pause" -> {
                 val arguments = call.arguments as Map<String, Int>
