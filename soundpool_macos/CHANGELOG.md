@@ -1,5 +1,9 @@
+## 2.1.0
+* Bugfix: add a flag to control if `AVAudioPlayer.enableRate` is used
+* Support for platform-specific initialization options  
+
 ## 2.0.0-nullsafety.0
-Null-safety support
+* Null-safety support
 
 ## 0.2.6
 * Bugfix: guard against invalid values of `poolId` parameter

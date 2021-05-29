@@ -10,13 +10,14 @@ class Soundpool {
 
   final int _maxStreams;
   final StreamType _streamType;
+  final Map<String, dynamic> _platformOptions;
   final Completer<int> _soundpoolId = Completer();
 
   SoundpoolPlatform get _platformInstance => SoundpoolPlatform.instance;
 
   bool _disposed = false;
 
-  Soundpool._([StreamType type = StreamType.music, int maxStreams = 1])
+  Soundpool._(this._platformOptions, [StreamType type = StreamType.music, int maxStreams = 1])
       : assert(maxStreams > 0),
         _streamType = type,
         _maxStreams = maxStreams;
@@ -36,7 +37,11 @@ class Soundpool {
 
   /// Creates the Soundpool instance with stream type setting set.
   factory Soundpool.fromOptions({SoundpoolOptions options = SoundpoolOptions._default}) {
-    return Soundpool._(options.streamType, options.maxStreams).._connect();
+    return Soundpool._(
+      options._platformOptions,
+      options.streamType,
+      options.maxStreams,
+    ).._connect();
   }
 
   /// Prepares sound for playing
@@ -283,7 +288,7 @@ class Soundpool {
 
   /// Connects to native Soundpool instance
   _connect() async {
-    final int id = await _platformInstance.init(_streamType.index, _maxStreams);
+    final int id = await _platformInstance.init(_streamType.index, _maxStreams, _platformOptions);
     if (id >= 0) {
       _soundpoolId.complete(id);
     } else {
@@ -380,14 +385,19 @@ class AudioStreamControl {
 class SoundpoolOptions {
   /// The type of stream used by the pool
   final StreamType streamType;
+
   /// Maximum number of pararell sounds being played
   final int maxStreams;
+
   /// Android specific options
   final SoundpoolOptionsAndroid androidOptions;
+
   /// iOS specific options
   final SoundpoolOptionsIos iosOptions;
+
   /// Web specific options
   final SoundpoolOptionsWeb webOptions;
+
   /// MacOS specific options
   final SoundpoolOptionsMacos macosOptions;
 
@@ -401,20 +411,34 @@ class SoundpoolOptions {
   });
 
   static const _default = SoundpoolOptions();
+
+  Map<String, dynamic> get _platformOptions => Map.fromEntries([
+        ...androidOptions._toOptionsMap().entries.map((e) => MapEntry('android_${e.key}', e.value)),
+        ...iosOptions._toOptionsMap().entries.map((e) => MapEntry('ios_${e.key}', e.value)),
+        ...webOptions._toOptionsMap().entries.map((e) => MapEntry('web_${e.key}', e.value)),
+        ...macosOptions._toOptionsMap().entries.map((e) => MapEntry('macos_${e.key}', e.value)),
+      ]);
 }
 
 class SoundpoolOptionsAndroid {
   static const _default = SoundpoolOptionsAndroid();
   const SoundpoolOptionsAndroid();
+
+  Map<String, dynamic> _toOptionsMap() => {};
 }
 
 class SoundpoolOptionsIos {
   static const _default = SoundpoolOptionsIos();
+
   /// When set the `rate` value in [Soundpool.play] and [Soundpool.setRate] wound have effect
   /// Default value: `true`
   final enableRate;
 
   const SoundpoolOptionsIos({this.enableRate = true});
+
+  Map<String, dynamic> _toOptionsMap() => {
+        'enableRate': enableRate,
+      };
 }
 
 class SoundpoolOptionsMacos {
@@ -425,10 +449,15 @@ class SoundpoolOptionsMacos {
   final enableRate;
 
   const SoundpoolOptionsMacos({this.enableRate = true});
+
+  Map<String, dynamic> _toOptionsMap() => {
+        'enableRate': enableRate,
+      };
 }
 
 class SoundpoolOptionsWeb {
   static const _default = SoundpoolOptionsWeb();
 
   const SoundpoolOptionsWeb();
+  Map<String, dynamic> _toOptionsMap() => {};
 }

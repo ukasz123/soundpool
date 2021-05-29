@@ -1,6 +1,6 @@
 name: soundpool_macos
 description: A Flutter Sound Pool for playing short audio files. Sound tracks are cached in memory and played directly from cache.
-version: 2.0.0-nullsafety.0
+version: 2.1.0
 homepage: https://github.com/ukasz123/soundpool/tree/master/soundpool_macos
 
 
@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  soundpool_platform_interface: ^2.0.0-nullsafety.0
+  soundpool_platform_interface: 2.1.0
 
 dev_dependencies:
   flutter_test:
