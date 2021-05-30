@@ -1,5 +1,10 @@
+## 2.1.0
+* Platform-specific options:
+    - `enableRate` option for iOS and MacOS - when set to `false` Soundpool would ignore playback rate values
+* Android Soundpool plays sounds on separate thread.
+
 ## 2.0.0-nullsafety.0
-Null-safety support 
+* Null-safety support 
 
 ### 1.1.3
 * Bugfix (iOS & MacOS): Guard against invalid values of `poolId`

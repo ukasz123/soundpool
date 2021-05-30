@@ -25,7 +25,7 @@ abstract class SoundpoolPlatform extends PlatformInterface {
   /// Initializes Soundpool
   ///
   /// Completes with value >=0 if operation was successful
-  Future<int> init(int streamType, int maxStreams) {
+  Future<int> init(int streamType, int maxStreams, Map<String, dynamic> plaformOptions) {
     throw UnimplementedError('createSoundpool() has not been implemented');
   }
 

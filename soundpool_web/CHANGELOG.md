@@ -1,3 +1,5 @@
+## 2.1.0
+Support for platform-specific options
 ## 2.0.0-nullsafety.0
 Null-safety support
 ## 1.0.3
