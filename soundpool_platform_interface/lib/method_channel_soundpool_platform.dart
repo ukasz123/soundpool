@@ -8,8 +8,8 @@ class MethodChannelSoundpoolPlatform extends SoundpoolPlatform {
       const MethodChannel('pl.ukaszapps/soundpool');
 
   @override
-  Future<int> init(int streamType, int maxStreams) async => (await _channel.invokeMethod(
-      "initSoundpool", {"maxStreams": maxStreams, "streamType": streamType}))!;
+  Future<int> init(int streamType, int maxStreams, Map<String, dynamic> platformOptions) async => (await _channel.invokeMethod(
+      "initSoundpool", <String, dynamic>{"maxStreams": maxStreams, "streamType": streamType}..addAll(platformOptions)))!;
 
   @override
   Future<int> loadUri(int poolId, String uri, int priority) async =>

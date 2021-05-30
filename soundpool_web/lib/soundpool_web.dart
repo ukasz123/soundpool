@@ -27,7 +27,7 @@ class SoundpoolPlugin extends SoundpoolPlatform {
   }
 
   @override
-  Future<int> init(int streamType, int maxStreams) async {
+  Future<int> init(int streamType, int maxStreams, Map<String, dynamic> options) async {
     _checkSupported();
     // stream type and streams limit are not supported
     var wrapperIndex = _pool.length + 1;

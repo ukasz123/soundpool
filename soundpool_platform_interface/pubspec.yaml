@@ -1,8 +1,7 @@
 name: soundpool_platform_interface
 description: A common platform interface for the soundpool plugin.
 homepage: https://github.com/ukasz123/soundpool/tree/master/soundpool_platform_interface
-version: 2.0.0-nullsafety.0
-
+version: 2.1.0
 dependencies:
   flutter:
     sdk: flutter

@@ -1,29 +1,22 @@
 PODS:
-  - FlutterMacOS (2.0.0)
-  - soundpool (1.0.1):
-    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
   - soundpool_macos (1.0.0):
     - FlutterMacOS
 
 DEPENDENCIES:
-  - soundpool (from `Flutter/ephemeral/.symlinks/plugins/soundpool/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
   - soundpool_macos (from `Flutter/ephemeral/.symlinks/plugins/soundpool_macos/macos`)
 
-SPEC REPOS:
-  trunk:
-    - FlutterMacOS
-
 EXTERNAL SOURCES:
-  soundpool:
-    :path: Flutter/ephemeral/.symlinks/plugins/soundpool/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
   soundpool_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/soundpool_macos/macos
 
 SPEC CHECKSUMS:
-  FlutterMacOS: 2f1b456c4d9436c4d4d13919bd3be8ef03ba6322
-  soundpool: 10ad9ba33c47ad6f956b50cb44dba46787529216
+  FlutterMacOS: 57701585bf7de1b3fc2bb61f6378d73bbdea8424
   soundpool_macos: 3bc0b8b238407516ad9b8afc2647670ff58124f9
 
-PODFILE CHECKSUM: d8ba9b3e9e93c62c74a660b46c6fcb09f03991a7
+PODFILE CHECKSUM: 6eac6b3292e5142cfc23bdeb71848a40ec51c14c
 
 COCOAPODS: 1.10.1
