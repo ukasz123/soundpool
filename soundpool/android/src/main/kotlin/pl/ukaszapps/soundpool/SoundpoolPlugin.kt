@@ -16,13 +16,13 @@ import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URI
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
+import java.util.concurrent.*
 
 
 internal val loadExecutor: Executor = Executors.newCachedThreadPool()
 
 internal val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
+
 class SoundpoolPlugin(context: Context) : MethodCallHandler {
     companion object {
         @JvmStatic
@@ -67,7 +67,7 @@ class SoundpoolPlugin(context: Context) : MethodCallHandler {
             "dispose" -> {
                 val arguments = call.arguments as Map<String, Int>
                 val poolIndex = arguments["poolId"]!!
-                wrappers[poolIndex].releaseSoundpool()
+                wrappers[poolIndex].dispose()
                 wrappers.removeAt(poolIndex)
                 result.success(null)
             }
@@ -97,6 +97,12 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
 
     private inline fun ui(crossinline block: () -> Unit) {
         uiThreadHandler.post { block() }
+    }
+
+    private var threadPool: ExecutorService = ThreadPoolExecutor(1, maxStreams, 1, TimeUnit.SECONDS, LinkedBlockingDeque())
+
+    private inline fun runBg(crossinline block: () -> Unit) {
+        threadPool.execute { block() }
     }
 
     private fun createSoundpool() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -141,7 +147,6 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
             volumeSettings[soundId] ?: DEFAULT_VOLUME_INFO
 
     internal fun onMethodCall(call: MethodCall, result: Result) {
-
         when (call.method) {
             "load" -> {
                 loadExecutor.execute {
@@ -207,27 +212,39 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                 val repeat: Int = arguments["repeat"] as Int? ?: 0
                 val rate: Double = arguments["rate"] as Double? ?: 1.0
                 val volumeInfo = volumeSettingsForSoundId(soundId = soundId)
-                val streamId = soundPool.play(soundId, volumeInfo.left, volumeInfo.right, 0,
-                        repeat, rate.toFloat())
-                result.success(streamId)
+                runBg {
+                    val streamId = soundPool.play(soundId, volumeInfo.left, volumeInfo.right, 0,
+                            repeat, rate.toFloat())
+                    ui {
+                        result.success(streamId)
+                    }
+                }
             }
             "pause" -> {
                 val arguments = call.arguments as Map<String, Int>
                 val streamId = arguments["streamId"]!!
-                soundPool.pause(streamId)
-                result.success(streamId)
+                runBg {
+                    soundPool.pause(streamId)
+                    ui {
+                        result.success(streamId)
+                    }
+                }
             }
             "resume" -> {
                 val arguments = call.arguments as Map<String, Int>
                 val streamId = arguments["streamId"]!!
-                soundPool.resume(streamId)
-                result.success(streamId)
+                runBg {
+                    soundPool.resume(streamId)
+                    ui { result.success(streamId) }
+                }
             }
             "stop" -> {
                 val arguments = call.arguments as Map<String, Int>
                 val streamId = arguments["streamId"]!!
-                soundPool.stop(streamId)
-                result.success(streamId)
+                runBg {
+                    soundPool.stop(streamId)
+                    ui { result.success(streamId) }
+                }
             }
             "setVolume" -> {
                 val arguments = call.arguments as Map<String, Any?>
@@ -239,29 +256,38 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                 }
                 val volumeLeft: Double = arguments["volumeLeft"]!! as Double
                 val volumeRight: Double = arguments["volumeRight"]!! as Double
-
-                streamId?.let {
-                    soundPool.setVolume(it, volumeLeft.toFloat(), volumeRight.toFloat())
+                runBg {
+                    streamId?.let {
+                        soundPool.setVolume(it, volumeLeft.toFloat(), volumeRight.toFloat())
+                    }
+                    soundId?.let {
+                        volumeSettings[it] = VolumeInfo(left = volumeLeft.toFloat(), right =
+                        volumeRight.toFloat())
+                    }
+                    ui { result.success(null) }
                 }
-                soundId?.let {
-                    volumeSettings[it] = VolumeInfo(left = volumeLeft.toFloat(), right =
-                    volumeRight.toFloat())
-                }
-                result.success(null)
             }
             "setRate" -> {
 
                 val arguments = call.arguments as Map<String, Any?>
                 val streamId: Int = arguments["streamId"]!! as Int
                 val rate: Double = arguments["rate"] as Double? ?: 1.0
-                soundPool.setRate(streamId, rate.toFloat())
-                result.success(null)
+                runBg {
+                    soundPool.setRate(streamId, rate.toFloat())
+                    ui { result.success(null) }
+                }
             }
             else -> result.notImplemented()
         }
     }
 
+    internal fun dispose() {
+        releaseSoundpool()
+        threadPool.shutdownNow()
+    }
+
     internal fun releaseSoundpool() {
         soundPool.release()
+
     }
 }
