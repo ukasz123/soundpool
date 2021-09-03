@@ -20,3 +20,6 @@ soundpool_macos/macos/Flutter/ephemeral/flutter_export_environment.sh
 GeneratedPluginRegistrant.swift
 soundpool_web/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
 soundpool_web/macos/Flutter/ephemeral/flutter_export_environment.sh
+soundpool/example/linux/flutter/generated_plugin_registrant.cc
+soundpool/example/linux/flutter/generated_plugin_registrant.h
+soundpool/example/linux/flutter/generated_plugins.cmake
