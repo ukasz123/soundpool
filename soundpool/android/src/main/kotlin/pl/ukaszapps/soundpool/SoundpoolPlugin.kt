@@ -8,6 +8,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -23,22 +25,29 @@ internal val loadExecutor: Executor = Executors.newCachedThreadPool()
 
 internal val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
 
-class SoundpoolPlugin(context: Context) : MethodCallHandler {
+class SoundpoolPlugin : MethodCallHandler, FlutterPlugin {
     companion object {
+        @Suppress("unused")
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), CHANNEL_NAME)
-
-            channel.setMethodCallHandler(SoundpoolPlugin(registrar.context()))
-
-            // clearing temporary files from previous session
-            with(registrar.context().cacheDir) { list { _, name -> name.matches("sound(.*)pool".toRegex()) }.forEach { File(this, it).delete() } }
+            var pool = SoundpoolPlugin()
+            pool.onRegister(registrar.context(), registrar.messenger())
         }
 
         private const val CHANNEL_NAME = "pl.ukaszapps/soundpool"
     }
 
-    private val application = context.applicationContext
+    private fun onRegister(context: Context,  messenger: BinaryMessenger) {
+        application = context.applicationContext
+        val channel = MethodChannel(messenger, CHANNEL_NAME)
+
+        channel.setMethodCallHandler(this)
+
+        // clearing temporary files from previous session
+        with(application.cacheDir) { this?.list { _, name -> name.matches("sound(.*)pool".toRegex()) }?.forEach { File(this, it).delete() } }
+    }
+
+    private lateinit var  application : Context
 
     private val wrappers: MutableList<SoundpoolWrapper> = mutableListOf()
 
@@ -78,6 +87,16 @@ class SoundpoolPlugin(context: Context) : MethodCallHandler {
             }
         }
     }
+
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        onRegister(binding.applicationContext, binding.binaryMessenger)
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        wrappers.forEach { it.dispose() }
+        wrappers.clear()
+    }
+
 }
 
 internal data class VolumeInfo(val left: Float = 1.0f, val right: Float = 1.0f);

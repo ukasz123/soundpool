@@ -9,18 +9,25 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         let instance = SwiftSoundpoolPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
-    private lazy var wrappers = [SwiftSoundpoolPlugin.SoundpoolWrapper]()
+    
+    private let counter = Atomic<Int>(0)
+    
+    private lazy var wrappers = Dictionary<Int,SwiftSoundpoolPlugin.SoundpoolWrapper>()
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "initSoundpool":
             // TODO create distinction between different types of audio playback
             let attributes = call.arguments as! NSDictionary
+            
+            initAudioSession(attributes)
+            
             let maxStreams = attributes["maxStreams"] as! Int
             let enableRate = (attributes["ios_enableRate"] as? Bool) ?? true
             let wrapper = SoundpoolWrapper(maxStreams, enableRate)
-            let index = wrappers.count
-            wrappers.append(wrapper)
+            
+            let index = counter.increment()
+            wrappers[index] = wrapper;
             result(index)
         case "dispose":
             let attributes = call.arguments as! NSDictionary
@@ -34,7 +41,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 break
             }
             wrapper.stopAllStreams()
-            wrappers.remove(at: index)
+            wrappers.removeValue(forKey: index)
             result(nil)
         default:
             let attributes = call.arguments as! NSDictionary
@@ -51,8 +58,58 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    private func initAudioSession(_ attributes: NSDictionary) {
+        if #available(iOS 10.0, *) {
+            guard let categoryAttr = attributes["ios_avSessionCategory"] as? String else {
+                return
+            }
+            let modeAttr = attributes["ios_avSessionMode"] as! String
+            
+            let category: AVAudioSession.Category
+            switch categoryAttr {
+            case "ambient":
+                category = .ambient
+            case "playback":
+                category = .playback
+            case "playAndRecord":
+                category = .playAndRecord
+            case "multiRoute":
+                category = .multiRoute
+            default:
+                category = .soloAmbient
+                
+            }
+            let mode: AVAudioSession.Mode
+            switch modeAttr {
+            case "moviePlayback":
+                mode = .moviePlayback
+            case "videoRecording":
+                mode = .videoRecording
+            case "voiceChat":
+                mode = .voiceChat
+            case "gameChat":
+                mode = .gameChat
+            case "videoChat":
+                mode = .videoChat
+            case "spokenAudio":
+                mode = .spokenAudio
+            case "measurement":
+                mode = .measurement
+            default:
+                mode = .default
+            }
+            do {
+                try AVAudioSession.sharedInstance().setCategory(category, mode: mode)
+                print("Audio session updated: category = '\(category)', mode = '\(mode)'.")
+            } catch (let e) {
+                //do nothing
+                print("Error while trying to set audio category: '\(e)'")
+            }
+        }
+    }
+    
     private func wrapperById(id: Int) -> SwiftSoundpoolPlugin.SoundpoolWrapper? {
-        if (id >= wrappers.count || id < 0){
+        if (id < 0){
             return nil
         }
         let wrapper = wrappers[id]
@@ -79,7 +136,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
         
         public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
             let attributes = call.arguments as! NSDictionary
-//            print("\(call.method): \(attributes)")
+            //            print("\(call.method): \(attributes)")
             switch call.method {
             case "load":
                 let rawSound = attributes["rawSound"] as! FlutterStandardTypedData
@@ -144,7 +201,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 }
                 do {
                     let currentCount = streamsCount[soundId] ?? 0
-
+                    
                     if (currentCount >= maxStreams){
                         result(0)
                         break

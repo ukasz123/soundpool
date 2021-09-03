@@ -11,7 +11,8 @@ dependencies:
     sdk: flutter
 
   soundpool:
-    path: ../
+    ^2.2.0
+    # path: ../
 
 dev_dependencies:
   flutter_test:

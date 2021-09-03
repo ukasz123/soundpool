@@ -8,7 +8,11 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
     let instance = SwiftSoundpoolPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
-  private lazy var wrappers = [SwiftSoundpoolPlugin.SoundpoolWrapper]()
+
+    
+  private let counter = Atomic<Int>(0)
+    
+  private lazy var wrappers = Dictionary<Int,SwiftSoundpoolPlugin.SoundpoolWrapper>()
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
@@ -18,8 +22,8 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             let maxStreams = attributes["maxStreams"] as! Int
             let enableRate = (attributes["macos_enableRate"] as? Bool) ?? true
             let wrapper = SoundpoolWrapper(maxStreams, enableRate)
-            let index = wrappers.count
-            wrappers.append(wrapper)
+            let index = counter.increment()
+            wrappers[index] = wrapper
             result(index)
         case "dispose":
             let attributes = call.arguments as! NSDictionary
@@ -33,7 +37,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 break
             }
             wrapper.stopAllStreams()
-            wrappers.remove(at: index)
+            wrappers.removeValue(forKey: index)
             result(nil)
         default:
             let attributes = call.arguments as! NSDictionary
@@ -52,7 +56,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
     }
     
     private func wrapperById(id: Int) -> SwiftSoundpoolPlugin.SoundpoolWrapper? {
-        if (id >= wrappers.count || id < 0){
+        if (id < 0){
             return nil
         }
         let wrapper = wrappers[id]
