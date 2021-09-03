@@ -1,3 +1,11 @@
+## 2.2.0
+* Platform-specific options:
+    - iOS: support for configuring [AVAudioSession](https://developer.apple.com/library/archive/documentation/Audio/Conceptual/AudioSessionProgrammingGuide/AudioSessionCategoriesandModes/AudioSessionCategoriesandModes.html#//apple_ref/doc/uid/TP40007875-CH10) 
+        - `audioSessionCategory` - sets [AVAudioSession.Category](https://developer.apple.com/documentation/avfaudio/avaudiosession/category)
+        - `audioSessionMode` - sets [AVAudioSession.Mode](https://developer.apple.com/documentation/avfaudio/avaudiosession/mode)
+* Bugfix: disposing a pool and creating a new one could end with an invalid state on iOS and MacOS
+* Updated Android pipeline
+
 ## 2.1.0
 * Platform-specific options:
     - `enableRate` option for iOS and MacOS - when set to `false` Soundpool would ignore playback rate values

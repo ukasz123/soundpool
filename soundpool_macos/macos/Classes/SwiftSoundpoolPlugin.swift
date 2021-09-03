@@ -37,7 +37,7 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 break
             }
             wrapper.stopAllStreams()
-            wrappers.removeValue(index)
+            wrappers.removeValue(forKey: index)
             result(nil)
         default:
             let attributes = call.arguments as! NSDictionary

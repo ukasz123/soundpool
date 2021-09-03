@@ -1,4 +1,3 @@
-
 /// Soundpool options for MacOS
 class SoundpoolOptionsMacos {
   static const kDefault = SoundpoolOptionsMacos();

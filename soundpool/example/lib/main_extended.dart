@@ -12,11 +12,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => new _MyAppState();
 }
 
-enum SoundpoolInitialization {
-  idle,
-  inProgress,
-  ready
-}
+enum SoundpoolInitialization { idle, inProgress, ready }
 
 class _MyAppState extends State<MyApp> {
   List<Soundpool> soundpools = [];
@@ -28,14 +24,18 @@ class _MyAppState extends State<MyApp> {
   @override
   initState() {
     super.initState();
-    if (!kIsWeb){
+    if (!kIsWeb) {
       initSoundPools();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget body = Center(child: RaisedButton(child: Text('Init'), onPressed: () => initSoundPools(),));
+    Widget body = Center(
+        child: RaisedButton(
+      child: Text('Init'),
+      onPressed: () => initSoundPools(),
+    ));
     if (_initialization == SoundpoolInitialization.ready) {
       body = _buildReadyWidget(context);
     }
@@ -104,10 +104,11 @@ class _MyAppState extends State<MyApp> {
             bottom: 16.0,
             left: 16.0,
             child: new FloatingActionButton(
-              onPressed: soundsMap[_selectedPool!]!.dicesSoundFromUriId == null ||
-                      soundsMap[_selectedPool!]!.dicesSoundFromUriId! < 0
-                  ? null
-                  : () => playSoundFromUri(),
+              onPressed:
+                  soundsMap[_selectedPool!]!.dicesSoundFromUriId == null ||
+                          soundsMap[_selectedPool!]!.dicesSoundFromUriId! < 0
+                      ? null
+                      : () => playSoundFromUri(),
               child: new Icon(Icons.play_arrow),
             ))
       ],
@@ -115,7 +116,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initSoundPools() {
-    setState((){
+    setState(() {
       _initialization = SoundpoolInitialization.inProgress;
     });
     soundpools =
@@ -142,8 +143,8 @@ class _MyAppState extends State<MyApp> {
         soundsMap[_selectedPool!]!.dicesStreamId = null; /**/
       } else {
         int streamId = soundsMap[_selectedPool!]!.dicesStreamId =
-            await _selectedPool!.play(soundsMap[_selectedPool!]!.dicesSoundId!,
-                repeat: 4);
+            await _selectedPool!
+                .play(soundsMap[_selectedPool!]!.dicesSoundId!, repeat: 4);
         soundsMap[_selectedPool!]!.playing = true;
         print("Playing sound with stream id: $streamId");
       }
@@ -222,10 +223,10 @@ class _MyAppState extends State<MyApp> {
 
   Future<Null> initSoundsForPool(Soundpool pool, SoundsMap sounds) async {
     print("Loading sounds for pool ${pool.streamType}...");
-    sounds.dicesSoundId =
-        await rootBundle.load("sounds/do-you-like-it.wav").then((ByteData soundData) {
+    sounds.dicesSoundId = await rootBundle
+        .load("sounds/do-you-like-it.wav")
+        .then((ByteData soundData) {
       return pool.load(soundData);
-      
     });
     await pool.setVolume(soundId: sounds.dicesSoundId, volume: sounds.volume);
     sounds.dicesSoundFromUriId = await pool.loadUri(
