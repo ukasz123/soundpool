@@ -1,0 +1,22 @@
+[package]
+name = "soundpool"
+version = "0.1.0"
+authors = ["Łukasz Huculak <ukasz.apps@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "soundpool"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[[bin]]
+name = "soundpool_runner"
+path = "src/main.rs"
+
+[dependencies]
+rodio = "0.14.0"
+rustyline = "*"
+
+[build-dependencies]
+cbindgen = "0.20.0"

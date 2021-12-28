@@ -20,6 +20,17 @@ soundpool_macos/macos/Flutter/ephemeral/flutter_export_environment.sh
 GeneratedPluginRegistrant.swift
 soundpool_web/macos/Flutter/ephemeral/Flutter-Generated.xcconfig
 soundpool_web/macos/Flutter/ephemeral/flutter_export_environment.sh
+settings.json
+**/.vs/*
+soundpool_windux/macos/libs/*
+soundpool_windux/.metals/*
 soundpool/example/linux/flutter/generated_plugin_registrant.cc
 soundpool/example/linux/flutter/generated_plugin_registrant.h
 soundpool/example/linux/flutter/generated_plugins.cmake
+
+soundpool_windux/target/*
+
+!soundpool_windux/target/release/
+!soundpool_windux/target/release/libsoundpool.so
+!soundpool_windux/target/release/libsoundpool.dylib
+!soundpool_windux/target/release/soundpool.dll

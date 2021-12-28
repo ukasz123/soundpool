@@ -1,0 +1,6 @@
+[workspace]
+members = ["rust"]
+
+[profile.release]
+lto = true
+codegen-units = 1
