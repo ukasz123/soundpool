@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:soundpool/soundpool.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:soundpool_example/issue_87.dart';
 import 'package:soundpool_example/platform_options.dart';
 
 Future<void> main() async {
@@ -104,6 +105,8 @@ class _SimpleAppState extends State<SimpleApp> {
     return Scaffold(
       appBar: AppBar(
         actions: [
+          IconButton(onPressed: ()=> Navigator.of(context).push(MaterialPageRoute(builder: (context)=> Issue87DemoPage()))
+          , icon: Icon(Icons.air)),
           IconButton(
               onPressed: () async {
                 final newOptions = await Navigator.of(context).push<
