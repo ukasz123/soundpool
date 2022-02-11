@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     Widget body = Center(
-        child: RaisedButton(
+        child: ElevatedButton(
       child: Text('Init'),
       onPressed: () => initSoundPools(),
     ));
@@ -140,7 +140,8 @@ class _MyAppState extends State<MyApp> {
       if (soundsMap[_selectedPool!]!.dicesStreamId != null) {
         await _selectedPool!.resume(soundsMap[_selectedPool!]!.dicesStreamId!);
 
-        soundsMap[_selectedPool!]!.dicesStreamId = null; /**/
+        soundsMap[_selectedPool!]!.dicesStreamId = null;
+        /**/
       } else {
         int streamId = soundsMap[_selectedPool!]!.dicesStreamId =
             await _selectedPool!
