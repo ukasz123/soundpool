@@ -119,8 +119,10 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _initialization = SoundpoolInitialization.inProgress;
     });
-    soundpools =
-        StreamType.values.map((type) => Soundpool(streamType: type)).toList();
+    soundpools = StreamType.values
+        .map((type) =>
+            Soundpool.fromOptions(options: SoundpoolOptions(streamType: type)))
+        .toList();
 
     soundsMap = Map.fromEntries(
         soundpools.map((soundpool) => MapEntry(soundpool, SoundsMap())));
