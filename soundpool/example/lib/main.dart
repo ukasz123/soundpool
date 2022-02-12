@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:soundpool/soundpool.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -32,7 +31,7 @@ class _SoundpoolInitializerState extends State<SoundpoolInitializer> {
     if (_pool == null) {
       return Material(
         child: Center(
-          child: RaisedButton(
+          child: ElevatedButton(
             onPressed: () => _initPool(_soundpoolOptions),
             child: Text("Init Soundpool"),
           ),
@@ -128,24 +127,24 @@ class _SimpleAppState extends State<SimpleApp> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  RaisedButton(
+                  ElevatedButton(
                     onPressed: _playSound,
                     child: Text("Play"),
                   ),
                   SizedBox(width: 8),
-                  RaisedButton(
+                  ElevatedButton(
                     onPressed: _pauseSound,
                     child: Text("Pause"),
                   ),
                   SizedBox(width: 8),
-                  RaisedButton(
+                  ElevatedButton(
                     onPressed: _stopSound,
                     child: Text("Stop"),
                   ),
                 ],
               ),
               SizedBox(height: 8),
-              RaisedButton(
+              ElevatedButton(
                 onPressed: _playCheering,
                 child: Text("Play cheering"),
               ),

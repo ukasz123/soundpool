@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:flutter/services.dart';
-
 import 'package:soundpool_platform_interface/soundpool_platform_interface.dart';
 
 import 'src/platform_options.dart';
