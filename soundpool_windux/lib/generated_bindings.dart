@@ -3024,7 +3024,11 @@ const int __MAC_11_4 = 110400;
 
 const int __MAC_11_5 = 110500;
 
+const int __MAC_11_6 = 110600;
+
 const int __MAC_12_0 = 120000;
+
+const int __MAC_12_1 = 120100;
 
 const int __IPHONE_2_0 = 20000;
 
@@ -3138,6 +3142,10 @@ const int __IPHONE_14_8 = 140800;
 
 const int __IPHONE_15_0 = 150000;
 
+const int __IPHONE_15_1 = 150100;
+
+const int __IPHONE_15_2 = 150200;
+
 const int __TVOS_9_0 = 90000;
 
 const int __TVOS_9_1 = 90100;
@@ -3196,6 +3204,10 @@ const int __TVOS_14_7 = 140700;
 
 const int __TVOS_15_0 = 150000;
 
+const int __TVOS_15_1 = 150100;
+
+const int __TVOS_15_2 = 150200;
+
 const int __WATCHOS_1_0 = 10000;
 
 const int __WATCHOS_2_0 = 20000;
@@ -3249,6 +3261,10 @@ const int __WATCHOS_7_5 = 70500;
 const int __WATCHOS_7_6 = 70600;
 
 const int __WATCHOS_8_0 = 80000;
+
+const int __WATCHOS_8_1 = 80100;
+
+const int __WATCHOS_8_3 = 80300;
 
 const int MAC_OS_X_VERSION_10_0 = 1000;
 
@@ -3326,7 +3342,7 @@ const int __DRIVERKIT_21_0 = 210000;
 
 const int __MAC_OS_X_VERSION_MIN_REQUIRED = 120000;
 
-const int __MAC_OS_X_VERSION_MAX_ALLOWED = 120000;
+const int __MAC_OS_X_VERSION_MAX_ALLOWED = 120100;
 
 const int __ENABLE_LEGACY_MAC_AVAILABILITY = 1;
 
