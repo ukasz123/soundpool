@@ -1,3 +1,5 @@
+## 2.3.0
+* Update for **Flutter 2.10**
 ## 2.2.0
 * Platform-specific options:
     - iOS: support for configuring [AVAudioSession](https://developer.apple.com/library/archive/documentation/Audio/Conceptual/AudioSessionProgrammingGuide/AudioSessionCategoriesandModes/AudioSessionCategoriesandModes.html#//apple_ref/doc/uid/TP40007875-CH10) 
@@ -102,4 +104,3 @@
     * Playing, stopping and pausing streams.
     * Releasing resources.
 * Works on Android and iOS.
-
