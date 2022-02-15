@@ -1,3 +1,5 @@
+## 2.2.0
+Update for Flutter 2.10
 ## 2.1.3
   Fix compilation error
 ## 2.1.2

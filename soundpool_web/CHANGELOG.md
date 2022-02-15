@@ -1,3 +1,5 @@
+## 2.2.0
+Update for Flutter 2.10
 ## 2.1.0
 Support for platform-specific options
 ## 2.0.0-nullsafety.0
