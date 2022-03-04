@@ -2,57 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:soundpool/soundpool.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:soundpool_example/initializer.dart';
 import 'package:soundpool_example/platform_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MaterialApp(home: SoundpoolInitializer()));
-}
-
-class SoundpoolInitializer extends StatefulWidget {
-  @override
-  _SoundpoolInitializerState createState() => _SoundpoolInitializerState();
-}
-
-class _SoundpoolInitializerState extends State<SoundpoolInitializer> {
-  Soundpool? _pool;
-  SoundpoolOptions _soundpoolOptions = SoundpoolOptions();
-
-  @override
-  void initState() {
-    super.initState();
-    if (!kIsWeb) {
-      _initPool(_soundpoolOptions);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_pool == null) {
-      return Material(
-        child: Center(
-          child: ElevatedButton(
-            onPressed: () => _initPool(_soundpoolOptions),
-            child: Text("Init Soundpool"),
-          ),
-        ),
-      );
-    } else {
-      return SimpleApp(
-        pool: _pool!,
-        onOptionsChange: _initPool,
-      );
-    }
-  }
-
-  void _initPool(SoundpoolOptions soundpoolOptions) {
-    _pool?.dispose();
-    setState(() {
-      _soundpoolOptions = soundpoolOptions;
-      _pool = Soundpool.fromOptions(options: _soundpoolOptions);
-      print('pool updated: $_pool');
-    });
-  }
+  runApp(MaterialApp(
+      home: SoundpoolInitializer(
+    builder: ((context, pool, reinitializePool) => SimpleApp(
+          pool: pool,
+          onOptionsChange: reinitializePool,
+        )),
+  )));
 }
 
 class SimpleApp extends StatefulWidget {
