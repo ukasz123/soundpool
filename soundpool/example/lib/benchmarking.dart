@@ -82,8 +82,10 @@ class _BenchmarkingViewState extends State<BenchmarkingView> {
             ),
           ),
           Center(
-            child: InkWell(
-              onTap: _state == _IndicatorState.idle ? _triggerPlaying : null,
+            child: GestureDetector(
+              onTapDown: _state == _IndicatorState.idle
+                  ? (_) => _triggerPlaying()
+                  : null,
               child: Container(
                 padding: const EdgeInsets.all(32.0),
                 color: Colors.lightGreen.shade200,
@@ -100,9 +102,11 @@ class _BenchmarkingViewState extends State<BenchmarkingView> {
     setState(() {
       _state = _IndicatorState.playing;
     });
-    print('BENCHMARKING: start playing - before play');
+    print(
+        '${DateTime.now().millisecondsSinceEpoch} - BENCHMARKING: start playing - before play');
     widget.pool.play(widget.soundId);
-    print('BENCHMARKING: start playing  - before play');
+    print(
+        '${DateTime.now().millisecondsSinceEpoch} - BENCHMARKING: start playing  - before play');
     _timer = Timer(
       Duration(milliseconds: 600),
       () => setState(() {

@@ -190,7 +190,12 @@ class Soundpool {
     assert(soundId > -1,
         "Invalid 'soundId' parameter. Only values greater than -1 are valid.");
     int poolId = await _soundpoolId.future;
-    return await _platformInstance.play(poolId, soundId, repeat, rate);
+    print(
+        '${DateTime.now().millisecondsSinceEpoch} - BENCHMARKING: before calling platform interface');
+    var future = _platformInstance.play(poolId, soundId, repeat, rate);
+    print(
+        '${DateTime.now().millisecondsSinceEpoch} - BENCHMARKING: after calling platform interface');
+    return await future;
   }
 
   /// Starts playing the sound identified by [soundId].

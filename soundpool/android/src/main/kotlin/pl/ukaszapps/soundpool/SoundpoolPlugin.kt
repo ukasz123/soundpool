@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -226,16 +227,20 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
                 result.success(null)
             }
             "play" -> {
+                Log.i("flutter", "${System.currentTimeMillis()} - BENCHMARKING: native play start")
                 val arguments = call.arguments as Map<String, Any>
                 val soundId: Int = (arguments["soundId"] as Int?)!!
                 val repeat: Int = arguments["repeat"] as Int? ?: 0
                 val rate: Double = arguments["rate"] as Double? ?: 1.0
                 val volumeInfo = volumeSettingsForSoundId(soundId = soundId)
                 runBg {
+                    Log.i("flutter", "${System.currentTimeMillis()} - BENCHMARKING: native pool play before")
                     val streamId = soundPool.play(soundId, volumeInfo.left, volumeInfo.right, 0,
                             repeat, rate.toFloat())
+                    Log.i("flutter", "${System.currentTimeMillis()} - BENCHMARKING: native pool play after")
                     ui {
                         result.success(streamId)
+                        Log.i("flutter", "${System.currentTimeMillis()} - BENCHMARKING: native play finished")
                     }
                 }
             }
