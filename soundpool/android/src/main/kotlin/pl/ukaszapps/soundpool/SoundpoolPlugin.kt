@@ -105,7 +105,7 @@ internal data class VolumeInfo(val left: Float = 1.0f, val right: Float = 1.0f);
 /**
  * Wraps Soundpool instance and handles instance-level method calls
  */
-internal class SoundpoolWrapper(private val context: Context, private val maxStreams: Int, private val streamType: Int) {
+class SoundpoolWrapper(private val context: Context, private val maxStreams: Int, private val streamType: Int) {
     companion object {
 
         private val DEFAULT_VOLUME_INFO = VolumeInfo()
@@ -166,7 +166,7 @@ internal class SoundpoolWrapper(private val context: Context, private val maxStr
     private fun volumeSettingsForSoundId(soundId: Int): VolumeInfo =
             volumeSettings[soundId] ?: DEFAULT_VOLUME_INFO
 
-    internal fun onMethodCall(call: MethodCall, result: Result) {
+     fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "load" -> {
                 loadExecutor.execute {

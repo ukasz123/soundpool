@@ -82,8 +82,8 @@ class _BenchmarkingViewState extends State<BenchmarkingView> {
             ),
           ),
           Center(
-            child: GestureDetector(
-              onTapDown: _state == _IndicatorState.idle
+            child: Listener(
+              onPointerDown: _state == _IndicatorState.idle
                   ? (_) => _triggerPlaying()
                   : null,
               child: Container(
