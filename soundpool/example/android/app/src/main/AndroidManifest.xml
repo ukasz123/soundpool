@@ -2,7 +2,7 @@
     package="pl.ukaszapps.soundpoolexample">
     <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="example"
+        android:label="Soundpool Example"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

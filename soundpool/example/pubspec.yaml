@@ -30,3 +30,5 @@ flutter:
     # Following sound was downloaded from http://soundbible.com/2212-Van-Sliding-Door.html
     - sounds/van-sliding-door-daniel_simon.wav
     - sounds/do-you-like-it.wav
+    # Following sound was downloaded from https://samplefocus.com/samples/bad-drum-punchy-snare
+    - sounds/bad-drum-punchy-snare.wav
