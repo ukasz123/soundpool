@@ -1,6 +1,5 @@
 mod message;
 use crate::soundpool::message::*;
-use crate::soundpool::InternalMessages;
 use crate::soundpool::InternalMessages::StreamFinished;
 use crate::soundpool::RequestMessage::*;
 use rodio::source::SamplesConverter;
@@ -14,11 +13,12 @@ use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
+use std::sync::Mutex;
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
 
-const RECEIVE_WAITING_TIMEOUT: Duration = Duration::from_millis(100);
+const RECEIVE_WAITING_TIMEOUT: Duration = Duration::from_millis(16);
 
 #[repr(C)]
 pub struct Soundpool {
@@ -38,51 +38,55 @@ impl std::fmt::Debug for Soundpool {
 }
 
 fn pool_event_loop(rx: Receiver<RequestMessage>) {
-    let mut sounds = HashMap::<u32, Box<Sound>>::new();
+    let mut sounds = HashMap::<u32, Arc<Sound>>::new();
     let mut streams_tx = HashMap::<u32, Stream>::new();
     let (internal_tx, internal_rx) = mpsc::channel::<InternalMessages>();
     loop {
-        let message = rx.recv().unwrap();
-        match message {
-            Dispose => {
-                println!("disposing the pool thread!");
-                break;
-            }
-            Load(m) => {
-                load(&mut sounds, m);
-            }
-            Play(content) => {
-                play(
-                    &sounds,
-                    content.sound_id,
-                    content.callback,
-                    &mut streams_tx,
-                    &internal_tx,
-                    content.repeat,
-                    content.rate,
-                );
-            }
-            StopBySound(sound_id) => {
-                for (stream_id, s) in &streams_tx {
-                    if s.sound_id == sound_id {
-                        stop(*stream_id, &streams_tx)
+        if let Ok(message) = rx.recv_timeout(RECEIVE_WAITING_TIMEOUT * 5) {
+            match message {
+                Dispose => {
+                    println!("disposing the pool thread!");
+                    for stream_id in streams_tx.keys() {
+                        stop(*stream_id, &streams_tx);
+                    }
+                    break;
+                }
+                Load(m) => {
+                    load(&mut sounds, m);
+                }
+                Play(content) => {
+                    play(
+                        &sounds,
+                        content.sound_id,
+                        content.callback,
+                        &mut streams_tx,
+                        &internal_tx,
+                        content.repeat,
+                        content.rate,
+                    );
+                }
+                StopBySound(sound_id) => {
+                    for (stream_id, s) in &streams_tx {
+                        if s.sound_id == sound_id {
+                            stop(*stream_id, &streams_tx)
+                        }
                     }
                 }
-            }
-            Stop(stream_id) => {
-                println!("stop triggered for {}", stream_id);
-                stop(stream_id, &streams_tx);
-            }
-            Pause(stream_id) => {
-                println!("pause triggered for {}", stream_id);
-                pause(stream_id, &streams_tx);
-            }
-            Resume(stream_id) => {
-                println!("resume triggered for {}", stream_id);
-                resume(stream_id, &streams_tx);
-            }
-            SetVolume(sound_id, volume) => {
-                set_volume(&mut sounds, &streams_tx, sound_id, volume);
+                Stop(stream_id) => {
+                    println!("stop triggered for {}", stream_id);
+                    stop(stream_id, &streams_tx);
+                }
+                Pause(stream_id) => {
+                    println!("pause triggered for {}", stream_id);
+                    pause(stream_id, &streams_tx);
+                }
+                Resume(stream_id) => {
+                    println!("resume triggered for {}", stream_id);
+                    resume(stream_id, &streams_tx);
+                }
+                SetVolume(sound_id, volume) => {
+                    set_volume(&mut sounds, &streams_tx, sound_id, volume);
+                }
             }
         }
         if let Ok(internal_message) = internal_rx.recv_timeout(RECEIVE_WAITING_TIMEOUT) {
@@ -97,7 +101,7 @@ fn pool_event_loop(rx: Receiver<RequestMessage>) {
         }
     }
 }
-fn load(sounds: &mut HashMap<u32, Box<Sound>>, load: LoadMessage) {
+fn load(sounds: &mut HashMap<u32, Arc<Sound>>, load: LoadMessage) {
     println!("in load");
     let buf = load.data;
     let mut vector: Vec<u8> = Vec::with_capacity(buf.len());
@@ -108,14 +112,14 @@ fn load(sounds: &mut HashMap<u32, Box<Sound>>, load: LoadMessage) {
         _ => 1,
     };
     let sound = Sound::new(vector, 1.0);
-    sounds.insert(sound_id, Box::new(sound));
+    sounds.insert(sound_id, Arc::new(sound));
     println!("in load returning {}", sound_id);
     let cb = load.callback;
     cb(Ok(sound_id));
 }
 
 fn play(
-    sounds: &HashMap<u32, Box<Sound>>,
+    sounds: &HashMap<u32, Arc<Sound>>,
     id: SoundId,
     callback: Callback<StreamId>,
     streams_tx: &mut HashMap<u32, Stream>,
@@ -126,20 +130,21 @@ fn play(
     let cached = &sounds.get(&id);
     if let Some(cached) = cached {
         println!("Trying to play the sound {}", id);
-        let copy_cursor = cached.cursor();
-        let volume = cached.volume;
         let stream_id = match streams_tx.keys().max() {
             Some(id) => id + 1,
             _ => 1,
         };
         let internal_tx_clone = internal_tx.clone();
         let (tx, rx) = mpsc::channel::<StreamControlMessage>();
+        let cached = Arc::clone(cached);
         let _handle = thread::spawn(move || {
+            let cursor = cached.cursor();
             let (_stream, stream_handle) = OutputStream::try_default().unwrap();
             let sink = rodio::Sink::try_new(&stream_handle).unwrap();
             let id = thread::current().id();
-            let decoder = Decoder::new(copy_cursor).unwrap();
-            let samples: SamplesConverter<Decoder<Cursor<Sound>>, i16> = decoder.convert_samples();
+            let decoder = Decoder::new(cursor).unwrap();
+            let samples: SamplesConverter<Decoder<Cursor<Vec<u8>>>, i16> =
+                decoder.convert_samples();
 
             //TODO: figure out how to play repeated sounds
             // let repeated_sound = if repeat == -1 {
@@ -150,7 +155,10 @@ fn play(
             let source = samples.speed(rate);
             sink.append(source);
             sink.play();
-            sink.set_volume(volume);
+            {
+                let volume = *cached.volume.lock().unwrap();
+                sink.set_volume(volume);
+            }
 
             println!("{:?} Sound played: {:?}", id, !sink.is_paused());
             loop {
@@ -223,18 +231,17 @@ fn resume(stream_id: u32, streams_tx: &HashMap<u32, Stream>) {
 }
 
 fn set_volume(
-    sounds: &mut HashMap<u32, Box<Sound>>,
+    sounds: &mut HashMap<u32, Arc<Sound>>,
     streams_tx: &HashMap<u32, Stream>,
     sound_id: SoundId,
     volume: VolumeValue,
 ) {
-    let cached = &sounds[&sound_id];
+    let cached = Arc::clone(&sounds[&sound_id]);
+    {
+        let mut v = cached.volume.lock().unwrap();
+        *v = volume;
+    }
     println!("Trying to set volume for the sound {}", sound_id);
-    let copy = Box::new(Sound {
-        volume: volume,
-        data: cached.data.clone(),
-    });
-    sounds.insert(sound_id, copy).unwrap();
     for (_, stream) in streams_tx {
         if stream.sound_id == sound_id {
             let tx = &stream.tx;
@@ -244,24 +251,22 @@ fn set_volume(
 }
 
 struct Sound {
-    data: Arc<Vec<u8>>,
-    volume: VolumeValue,
+    data: Vec<u8>,
+    volume: Mutex<VolumeValue>,
 }
+
 impl Sound {
     fn new(data: Vec<u8>, volume: VolumeValue) -> Sound {
         Sound {
-            data: Arc::new(data),
-            volume: volume,
+            data: data,
+            volume: Mutex::new(volume),
         }
     }
-    fn cursor(self: &Self) -> Cursor<Sound> {
-        Cursor::new(Sound {
-            data: self.data.clone(),
-            volume: self.volume,
-        })
+    fn cursor(self: &Self) -> Cursor<Vec<u8>> {
+        Cursor::new(self.data.clone())
     }
 
-    fn decoder(self: &Self) -> rodio::Decoder<Cursor<Sound>> {
+    fn decoder(self: &Self) -> rodio::Decoder<Cursor<Vec<u8>>> {
         rodio::Decoder::new(self.cursor()).unwrap()
     }
 }

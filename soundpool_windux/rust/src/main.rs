@@ -10,6 +10,19 @@ use crate::soundpool::Soundpool;
 
 fn main() {
     let (tx, rx) = mpsc::channel::<String>();
+    println!(
+        r#"
+    Available commands:
+    l (d) - loads audio file (optional d uses "do-you-like-it.wav", "example.mp3" is used otherwise)
+    p [sound_id] - plays sound with id of "sound_id"
+    s [stream_id] - stops stream "stream_id"
+    a [stream_id] - pauses stream "stream_id"
+    r [stream_id] - resumes stream "stream_id"
+    v [sound_id] [volume] - sets volume for sound of "sound_id"
+    d - disposes pool
+    q - quit
+    "#
+    );
 
     thread::spawn(move || {
         let id = thread::current().id();
@@ -21,18 +34,18 @@ fn main() {
                 break;
             }
             if message.starts_with("l") {
-                let mut file = File::open(if message.len() > 1 && message[2..].starts_with("d") {
+                let filename = if message.len() > 1 && message[2..].starts_with("d") {
                     "do-you-like-it.wav"
                 } else {
                     "example.mp3"
-                })
-                .unwrap();
+                };
+                let mut file = File::open(filename).unwrap();
                 // let mut file = File::open("../../soundpool/example/sounds/do-you-like-it.wav").unwrap();
 
                 let mut buf = Vec::new();
                 file.read_to_end(&mut buf).unwrap();
                 let sound_id = soundpool.load(&buf);
-                println!("{:?}: sound loaded: {:?}", id, sound_id);
+                println!("{:?}: sound loaded: {:?} from {}", id, sound_id, filename);
             }
             if message.starts_with("p") {
                 // play?
@@ -96,7 +109,10 @@ fn main() {
         let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
-                tx.send(line).unwrap();
+                if tx.send(line).is_err() {
+                    println!("{:?} Finishing!", id);
+                    break;
+                }
             }
             Err(_) => {
                 println!("{:?} Finishing!", id);
