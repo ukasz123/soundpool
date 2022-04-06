@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:soundpool/src/platform_options.dart';
 import 'package:soundpool_platform_interface/soundpool_platform_interface.dart';
-
-import 'src/platform_options.dart';
 
 export 'src/platform_options.dart';
 
 class Soundpool {
-  static const _DEFAULT_SOUND_PRIORITY = 1;
+  static const _defaultSoundPriority = 1;
 
   final int _maxStreams;
   final StreamType _streamType;
@@ -19,9 +18,11 @@ class Soundpool {
 
   bool _disposed = false;
 
-  Soundpool._(this._platformOptions,
-      [StreamType type = StreamType.music, int maxStreams = 1])
-      : assert(maxStreams > 0),
+  Soundpool._(
+    this._platformOptions, [
+    StreamType type = StreamType.music,
+    int maxStreams = 1,
+  ])  : assert(maxStreams > 0),
         _streamType = type,
         _maxStreams = maxStreams;
 
@@ -35,8 +36,10 @@ class Soundpool {
   ///
   /// *Note:* Optional [streamType] parameter has effect on Android only.
   @Deprecated('Use `fromOptions` instead')
-  factory Soundpool(
-          {StreamType streamType = StreamType.music, int maxStreams = 1}) =>
+  factory Soundpool({
+    StreamType streamType = StreamType.music,
+    int maxStreams = 1,
+  }) =>
       Soundpool.fromOptions(
         options: SoundpoolOptions(
           streamType: streamType,
@@ -45,8 +48,9 @@ class Soundpool {
       );
 
   /// Creates the Soundpool instance with stream type setting set.
-  factory Soundpool.fromOptions(
-      {SoundpoolOptions options = SoundpoolOptions.kDefault}) {
+  factory Soundpool.fromOptions({
+    SoundpoolOptions options = SoundpoolOptions.kDefault,
+  }) {
     return Soundpool._(
       options._platformOptions,
       options.streamType,
@@ -64,8 +68,7 @@ class Soundpool {
   ///
   /// ## web
   /// [priority] is ignored.
-  Future<int> load(ByteData rawSound,
-          {int priority = _DEFAULT_SOUND_PRIORITY}) =>
+  Future<int> load(ByteData rawSound, {int priority = _defaultSoundPriority}) =>
       loadUint8List(rawSound.buffer.asUint8List(), priority: priority);
 
   /// Prepares sound for playing
@@ -76,11 +79,13 @@ class Soundpool {
   ///
   /// ## web
   /// [priority] is ignored.
-  Future<int> loadUint8List(Uint8List rawSound,
-      {int priority = _DEFAULT_SOUND_PRIORITY}) async {
+  Future<int> loadUint8List(
+    Uint8List rawSound, {
+    int priority = _defaultSoundPriority,
+  }) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    int poolId = await _soundpoolId.future;
-    int soundId =
+    final int poolId = await _soundpoolId.future;
+    final int soundId =
         await _platformInstance.loadUint8List(poolId, rawSound, priority);
     return soundId;
   }
@@ -92,11 +97,13 @@ class Soundpool {
   ///
   /// ## web
   /// [priority] is ignored.
-  Future<int> loadUri(String uri,
-      {int priority = _DEFAULT_SOUND_PRIORITY}) async {
+  Future<int> loadUri(
+    String uri, {
+    int priority = _defaultSoundPriority,
+  }) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    int poolId = await _soundpoolId.future;
-    int soundId = await _platformInstance.loadUri(poolId, uri, priority);
+    final int poolId = await _soundpoolId.future;
+    final int soundId = await _platformInstance.loadUri(poolId, uri, priority);
     return soundId;
   }
 
@@ -114,11 +121,13 @@ class Soundpool {
   ///
   /// ## web
   /// [priority] and [repeat] are ignored. The sound is played only once.
-  Future<int> loadAndPlay(ByteData rawSound,
-      {int priority = _DEFAULT_SOUND_PRIORITY,
-      int repeat = 0,
-      double rate = 1.0}) async {
-    int soundId = await load(rawSound, priority: priority);
+  Future<int> loadAndPlay(
+    ByteData rawSound, {
+    int priority = _defaultSoundPriority,
+    int repeat = 0,
+    double rate = 1.0,
+  }) async {
+    final int soundId = await load(rawSound, priority: priority);
     if (soundId > -1) {
       play(soundId, repeat: repeat, rate: rate);
     }
@@ -138,12 +147,14 @@ class Soundpool {
   ///
   /// ## web
   /// [priority] and [repeat] are ignored. The sound is played only once.
-  Future<int> loadAndPlayUint8List(Uint8List rawSound,
-      {int priority = _DEFAULT_SOUND_PRIORITY,
-      int repeat = 0,
-      double rate = 1.0}) async {
+  Future<int> loadAndPlayUint8List(
+    Uint8List rawSound, {
+    int priority = _defaultSoundPriority,
+    int repeat = 0,
+    double rate = 1.0,
+  }) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    int soundId = await loadUint8List(rawSound, priority: priority);
+    final int soundId = await loadUint8List(rawSound, priority: priority);
     if (soundId > -1) {
       play(soundId, repeat: repeat, rate: rate);
     }
@@ -162,12 +173,14 @@ class Soundpool {
   ///
   /// ## web
   /// [priority] and [repeat] are ignored. The sound is played only once.
-  Future<int> loadAndPlayUri(String uri,
-      {int priority = _DEFAULT_SOUND_PRIORITY,
-      int repeat = 0,
-      double rate = 1.0}) async {
+  Future<int> loadAndPlayUri(
+    String uri, {
+    int priority = _defaultSoundPriority,
+    int repeat = 0,
+    double rate = 1.0,
+  }) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    int soundId = await loadUri(uri, priority: priority);
+    final int soundId = await loadUri(uri, priority: priority);
     if (soundId > -1) {
       play(soundId, repeat: repeat, rate: rate);
     }
@@ -187,10 +200,12 @@ class Soundpool {
       rate >= 0.5 && rate <= 2.0,
       "'rate' has to be value in (0.5 - 2.0) range",
     );
-    assert(soundId > -1,
-        "Invalid 'soundId' parameter. Only values greater than -1 are valid.");
-    int poolId = await _soundpoolId.future;
-    return await _platformInstance.play(poolId, soundId, repeat, rate);
+    assert(
+      soundId > -1,
+      "Invalid 'soundId' parameter. Only values greater than -1 are valid.",
+    );
+    final int poolId = await _soundpoolId.future;
+    return _platformInstance.play(poolId, soundId, repeat, rate);
   }
 
   /// Starts playing the sound identified by [soundId].
@@ -199,8 +214,11 @@ class Soundpool {
   ///
   /// ## web
   /// [repeat] is ignored. The sound is played only once.
-  Future<AudioStreamControl> playWithControls(int soundId,
-      {int repeat = 0, double rate = 1.0}) async {
+  Future<AudioStreamControl> playWithControls(
+    int soundId, {
+    int repeat = 0,
+    double rate = 1.0,
+  }) async {
     final streamId = await play(soundId, repeat: repeat, rate: rate);
     return AudioStreamControl._(this, streamId);
   }
@@ -210,9 +228,11 @@ class Soundpool {
   ///
   Future<void> stop(int streamId) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    assert(streamId > 0,
-        "Invalid 'streamId' parameter. Only values greater than 0 are valid.");
-    int poolId = await _soundpoolId.future;
+    assert(
+      streamId > 0,
+      "Invalid 'streamId' parameter. Only values greater than 0 are valid.",
+    );
+    final int poolId = await _soundpoolId.future;
     await _platformInstance.stop(poolId, streamId);
   }
 
@@ -222,9 +242,11 @@ class Soundpool {
   /// *DOES NOT WORK!*.
   Future<void> pause(int streamId) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    assert(streamId > 0,
-        "Invalid 'streamId' parameter. Only values greater than 0 are valid.");
-    int poolId = await _soundpoolId.future;
+    assert(
+      streamId > 0,
+      "Invalid 'streamId' parameter. Only values greater than 0 are valid.",
+    );
+    final int poolId = await _soundpoolId.future;
     await _platformInstance.pause(poolId, streamId);
   }
 
@@ -234,9 +256,11 @@ class Soundpool {
   /// *DOES NOT WORK!*.
   Future<void> resume(int streamId) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    assert(streamId > 0,
-        "Invalid 'streamId' parameter. Only values greater than 0 are valid.");
-    int poolId = await _soundpoolId.future;
+    assert(
+      streamId > 0,
+      "Invalid 'streamId' parameter. Only values greater than 0 are valid.",
+    );
+    final int poolId = await _soundpoolId.future;
     await _platformInstance.resume(poolId, streamId);
   }
 
@@ -246,52 +270,72 @@ class Soundpool {
   ///
   /// ## web
   /// [volumeLeft] and [volumeRight] pair has no effect.
-  Future<void> setVolume(
-      {int? soundId,
-      int? streamId,
-      double? volume,
-      double? volumeLeft,
-      double? volumeRight}) async {
+  Future<void> setVolume({
+    int? soundId,
+    int? streamId,
+    double? volume,
+    double? volumeLeft,
+    double? volumeRight,
+  }) async {
     assert(!_disposed, "Soundpool instance was already disposed");
     assert(
-        soundId != null || streamId != null,
-        "Either 'soundId' or 'streamI"
-        "d' has to be passed");
+      soundId != null || streamId != null,
+      "Either 'soundId' or 'streamId' "
+      "has to be passed",
+    );
     assert(
-        volume != null || (volumeLeft != null && volumeRight != null),
-        "Ei"
-        "ther 'volume' or both 'volumeLeft' and 'volumeRight' has to be "
-        "passed");
+      volume != null || (volumeLeft != null && volumeRight != null),
+      "Ei"
+      "there 'volume' or both 'volumeLeft' and 'volumeRight' has to be "
+      "passed",
+    );
 
-    assert(streamId == null || streamId > 0,
-        "Invalid 'streamId' parameter. Only values greater than 0 are valid.");
-    assert(soundId == null || soundId > -1,
-        "Invalid 'soundId' parameter. Only values greater than -1 are valid.");
-
-    if (volume != null && volumeLeft == null) {
-      volumeLeft = volume;
+    assert(
+      streamId == null || streamId > 0,
+      "Invalid 'streamId' parameter. Only values greater than 0 are valid.",
+    );
+    assert(
+      soundId == null || soundId > -1,
+      "Invalid 'soundId' parameter. Only values greater than -1 are valid.",
+    );
+    double? volumeLeftValue = volumeLeft;
+    double? volumeRightValue = volumeRight;
+    if (volume != null && volumeLeftValue == null) {
+      volumeLeftValue = volume;
     }
     if (volume != null && volumeRight == null) {
-      volumeRight = volume;
+      volumeRightValue = volume;
     }
-    await _soundpoolId.future.then((poolId) => _platformInstance.setVolume(
-        poolId, soundId, streamId, volumeLeft, volumeRight));
+    await _soundpoolId.future.then(
+      (poolId) => _platformInstance.setVolume(
+        poolId,
+        soundId,
+        streamId,
+        volumeLeftValue,
+        volumeRightValue,
+      ),
+    );
   }
 
   /// Sets playback rate. A value of 1.0 means normal speed, 0.5 - half speed, 2.0 - double speed.
   ///
   /// Available value range: (0.5 - 2.0)
-  Future<void> setRate(
-      {required int streamId, required double playbackRate}) async {
+  Future<void> setRate({
+    required int streamId,
+    required double playbackRate,
+  }) async {
     assert(!_disposed, "Soundpool instance was already disposed");
-    assert(streamId > 0,
-        "Invalid 'streamId' parameter. Only values greater than 0 are valid.");
+    assert(
+      streamId > 0,
+      "Invalid 'streamId' parameter. Only values greater than 0 are valid.",
+    );
     assert(
       playbackRate >= 0.5 && playbackRate <= 2.0,
       "'playbackRate' has to be value in (0.5 - 2.0) range",
     );
     await _soundpoolId.future.then(
-        (poolId) => _platformInstance.setRate(poolId, streamId, playbackRate));
+      (poolId) => _platformInstance.setRate(poolId, streamId, playbackRate),
+    );
   }
 
   /// Releases loaded sounds
@@ -315,9 +359,12 @@ class Soundpool {
   StreamType get streamType => _streamType;
 
   /// Connects to native Soundpool instance
-  _connect() async {
+  Future<void> _connect() async {
     final int id = await _platformInstance.init(
-        _streamType.index, _maxStreams, _platformOptions);
+      _streamType.index,
+      _maxStreams,
+      _platformOptions,
+    );
     if (id >= 0) {
       _soundpoolId.complete(id);
     } else {
@@ -397,10 +444,11 @@ class AudioStreamControl {
   /// At least [volume] or both [volumeLeft] and [volumeRight] have to be passed
   Future setVolume({double? volume, double? volumeLeft, double? volumeRight}) {
     return _pool.setVolume(
-        streamId: stream,
-        volume: volume,
-        volumeLeft: volumeLeft,
-        volumeRight: volumeRight);
+      streamId: stream,
+      volume: volume,
+      volumeLeft: volumeLeft,
+      volumeRight: volumeRight,
+    );
   }
 
   /// Sets playback rate. A value of 1.0 means normal speed, 0.5 - half speed, 2.0 - double speed.
@@ -418,7 +466,7 @@ class SoundpoolOptions {
   /// The type of stream used by the pool
   final StreamType streamType;
 
-  /// Maximum number of pararell sounds being played
+  /// Maximum number of pararel sounds being played
   final int maxStreams;
 
   /// Android specific options
