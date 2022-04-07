@@ -20,7 +20,8 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             // TODO create distinction between different types of audio playback
             let attributes = call.arguments as! NSDictionary
             
-            initAudioSession(attributes)
+            // It will not init AudioSession, instead it should be opened using another package like "audio_session" (https://pub.dev/packages/audio_session)
+            //initAudioSession(attributes)
             
             let maxStreams = attributes["maxStreams"] as! Int
             let enableRate = (attributes["ios_enableRate"] as? Bool) ?? true
