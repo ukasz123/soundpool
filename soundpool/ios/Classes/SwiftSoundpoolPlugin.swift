@@ -20,9 +20,6 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
             // TODO create distinction between different types of audio playback
             let attributes = call.arguments as! NSDictionary
             
-            // It will not init AudioSession, instead it should be opened using another package like "audio_session" (https://pub.dev/packages/audio_session)
-            //initAudioSession(attributes)
-            
             let maxStreams = attributes["maxStreams"] as! Int
             let enableRate = (attributes["ios_enableRate"] as? Bool) ?? true
             let wrapper = SoundpoolWrapper(maxStreams, enableRate)
@@ -56,56 +53,6 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 break
             }
             wrapper.handle(call, result: result)
-        }
-    }
-    
-    private func initAudioSession(_ attributes: NSDictionary) {
-        if #available(iOS 10.0, *) {
-            guard let categoryAttr = attributes["ios_avSessionCategory"] as? String else {
-                return
-            }
-            let modeAttr = attributes["ios_avSessionMode"] as! String
-            
-            let category: AVAudioSession.Category
-            switch categoryAttr {
-            case "ambient":
-                category = .ambient
-            case "playback":
-                category = .playback
-            case "playAndRecord":
-                category = .playAndRecord
-            case "multiRoute":
-                category = .multiRoute
-            default:
-                category = .soloAmbient
-                
-            }
-            let mode: AVAudioSession.Mode
-            switch modeAttr {
-            case "moviePlayback":
-                mode = .moviePlayback
-            case "videoRecording":
-                mode = .videoRecording
-            case "voiceChat":
-                mode = .voiceChat
-            case "gameChat":
-                mode = .gameChat
-            case "videoChat":
-                mode = .videoChat
-            case "spokenAudio":
-                mode = .spokenAudio
-            case "measurement":
-                mode = .measurement
-            default:
-                mode = .default
-            }
-            do {
-                try AVAudioSession.sharedInstance().setCategory(category, mode: mode)
-                print("Audio session updated: category = '\(category)', mode = '\(mode)'.")
-            } catch (let e) {
-                //do nothing
-                print("Error while trying to set audio category: '\(e)'")
-            }
         }
     }
     
