@@ -306,8 +306,8 @@ class Soundpool {
   /// Disposes soundpool
   ///
   /// The Soundpool instance is not usable anymore
-  void dispose() {
-    _soundpoolId.future
+  Future<void> dispose() async {
+    await _soundpoolId.future
         .then((poolId) => _platformInstance.dispose(poolId), onError: (_) {});
     _disposed = true;
   }
@@ -315,7 +315,7 @@ class Soundpool {
   StreamType get streamType => _streamType;
 
   /// Connects to native Soundpool instance
-  _connect() async {
+  Future<void> _connect() async {
     final int id = await _platformInstance.init(
         _streamType.index, _maxStreams, _platformOptions);
     if (id >= 0) {

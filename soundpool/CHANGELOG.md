@@ -1,3 +1,5 @@
+## 2.3.0+1
+* Change return type of dispose to Future<void> so it can be awaited
 ## 2.3.0
 * Update for **Flutter 2.10**
 ## 2.2.0
