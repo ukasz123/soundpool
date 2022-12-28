@@ -24,7 +24,7 @@ set(soundpool_windux_bundled_libraries
   PARENT_SCOPE
 )
 
-cmake_path(SET path NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../target/release/libsoundpool.so")
+#cmake_path(SET path NORMALIZE "${CMAKE_CURRENT_SOURCE_DIR}/../target/release/libsoundpool.so")
 
 # List of absolute paths to libraries that should be bundled with the plugin
 set(soundpool_windux_bundled_libraries
