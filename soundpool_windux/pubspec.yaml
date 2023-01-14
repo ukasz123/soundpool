@@ -33,11 +33,6 @@ flutter:
         dartPluginClass: SoundpoolWindux
         # not used - remove candidate
         pluginClass: SoundpoolWinduxPlugin
-      
-      macos:
-        # not used - remove candidate
-        pluginClass: SoundpoolWinduxPlugin
-
 
 ffigen:
   output: 'lib/generated_bindings.dart'
