@@ -1,3 +1,5 @@
+## 2.2.0
+- Update for dart 3.0
 ## 2.1.0
 - Platform-specific options support
 ## 2.0.0-nullsafety.0

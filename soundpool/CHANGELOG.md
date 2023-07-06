@@ -1,8 +1,10 @@
+## 2.4.0
+* Update for **Dart 3.0** and **Flutter 3.10**
 ## 2.3.0
 * Update for **Flutter 2.10**
 ## 2.2.0
 * Platform-specific options:
-    - iOS: support for configuring [AVAudioSession](https://developer.apple.com/library/archive/documentation/Audio/Conceptual/AudioSessionProgrammingGuide/AudioSessionCategoriesandModes/AudioSessionCategoriesandModes.html#//apple_ref/doc/uid/TP40007875-CH10) 
+    - iOS: support for configuring [AVAudioSession](https://developer.apple.com/library/archive/documentation/Audio/Conceptual/AudioSessionProgrammingGuide/AudioSessionCategoriesandModes/AudioSessionCategoriesandModes.html#//apple_ref/doc/uid/TP40007875-CH10)
         - `audioSessionCategory` - sets [AVAudioSession.Category](https://developer.apple.com/documentation/avfaudio/avaudiosession/category)
         - `audioSessionMode` - sets [AVAudioSession.Mode](https://developer.apple.com/documentation/avfaudio/avaudiosession/mode)
 * Bugfix: disposing a pool and creating a new one could end with an invalid state on iOS and MacOS
@@ -14,7 +16,7 @@
 * Android Soundpool plays sounds on separate thread.
 
 ## 2.0.0-nullsafety.0
-* Null-safety support 
+* Null-safety support
 
 ### 1.1.3
 * Bugfix (iOS & MacOS): Guard against invalid values of `poolId`

@@ -1,3 +1,5 @@
+## 2.3.0
+Update for Dart 3.0 and Flutter 3.10
 ## 2.2.0
 Update for Flutter 2.10
 ## 2.1.0
@@ -11,5 +13,5 @@ Null-safety support
 * Fix iOS building issues
 ## 1.0.1
 * Homepage url fix
-## 1.0.0 
+## 1.0.0
 * Initial release
