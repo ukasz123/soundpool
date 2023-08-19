@@ -12,14 +12,14 @@ dependencies:
   
   soundpool_platform_interface: 2.1.0
   
-  ffi: ^1.1.0
+  ffi: ^2.0.1
   http: ^0.13.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  ffigen: ^3.0.0
+  ffigen: ^7.2.4
 
 flutter:
   plugin:
@@ -33,11 +33,6 @@ flutter:
         dartPluginClass: SoundpoolWindux
         # not used - remove candidate
         pluginClass: SoundpoolWinduxPlugin
-      
-      macos:
-        # not used - remove candidate
-        pluginClass: SoundpoolWinduxPlugin
-
 
 ffigen:
   output: 'lib/generated_bindings.dart'
