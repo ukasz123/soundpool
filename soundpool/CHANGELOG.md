@@ -1,5 +1,6 @@
 ## 2.4.0
 * Update for **Dart 3.0** and **Flutter 3.10**
+* **(iOS)** Skip `AVAudioSession` configuration when [`audio_session`](https://pub.dev/packages/audio_session) plugin has been detected. Audio session should be managed through that plugin instead (Fixes [#99](https://github.com/ukasz123/soundpool/pull/99)).
 ## 2.3.0
 * Update for **Flutter 2.10**
 ## 2.2.0
