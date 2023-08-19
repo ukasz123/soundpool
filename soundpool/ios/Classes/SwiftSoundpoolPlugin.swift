@@ -60,6 +60,13 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
     
     private func initAudioSession(_ attributes: NSDictionary) {
         if #available(iOS 10.0, *) {
+            // guard against audio_session plugin and avoid doing redundant session management
+            if (NSClassFromString("AudioSessionPlugin") != nil) {
+                print("AudioSession should be managed by 'audio_session' plugin")
+                return
+            }
+            
+            
             guard let categoryAttr = attributes["ios_avSessionCategory"] as? String else {
                 return
             }
