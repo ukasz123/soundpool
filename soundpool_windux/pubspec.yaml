@@ -1,25 +1,25 @@
 name: soundpool_windux
 description: A Flutter Sound Pool for playing short audio files. Sound tracks are cached in memory and played directly from cache. This plugin provides implementation for Windows and Linux platforms
-version: 0.1.0
+version: 0.2.0
 
 environment:
-  sdk: ">=2.14.0 <3.0.0"
-  flutter: ">=2.0.0"
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
 
 dependencies:
   flutter:
     sdk: flutter
   
-  soundpool_platform_interface: 2.1.0
+  soundpool_platform_interface: ^2.1.0
   
   ffi: ^2.0.1
-  http: ^0.13.3
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  ffigen: ^7.2.4
+  ffigen: ^9.0.1
 
 flutter:
   plugin:

@@ -1,4 +1,4 @@
-use rustyline::Editor;
+use rustyline::{Editor, DefaultEditor};
 use std::fs::File;
 
 use std::io::*;
@@ -103,7 +103,7 @@ fn main() {
             }
         }
     });
-    let mut rl = Editor::<()>::new();
+    let mut rl = DefaultEditor::new().unwrap();
     let id = thread::current().id();
     loop {
         let readline = rl.readline(">> ");

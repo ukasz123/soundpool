@@ -1,6 +1,6 @@
 [package]
 name = "soundpool"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Łukasz Huculak <ukasz.apps@gmail.com>"]
 edition = "2018"
 
@@ -15,8 +15,8 @@ name = "soundpool_runner"
 path = "src/main.rs"
 
 [dependencies]
-rodio = "0.14.0"
+rodio = "0.17"
 rustyline = "*"
 
 [build-dependencies]
-cbindgen = "0.20.0"
+cbindgen = "0.26.0"
