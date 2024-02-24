@@ -278,18 +278,20 @@ public class SwiftSoundpoolPlugin: NSObject, FlutterPlugin {
                 } else {
                     result(-1)
                 }
-            case "setVolume":
+           case "setVolume":
                 let streamId = attributes["streamId"] as? Int
                 let soundId = attributes["soundId"] as? Int
-                let volume = attributes["volumeLeft"] as! Double
-                
+                let volumeLeft = attributes["volumeLeft"] as! Double
+                let volumeRight = attributes["volumeRight"] as! Double
+    
                 var audioPlayer: AVAudioPlayer? = nil;
                 if (streamId != nil){
                     audioPlayer = playerByStreamId(streamId: streamId!)?.player
                 } else if (soundId != nil){
                     audioPlayer = playerBySoundId(soundId: soundId!)
                 }
-                audioPlayer?.volume = Float(volume)
+                audioPlayer?.pan = Float(volumeRight - volumeLeft) // Set panning
+                audioPlayer?.volume = Float((volumeLeft + volumeRight) / 2) // Set average volume
                 result(nil)
             case "setRate":
                 if (enableRate){
