@@ -96,8 +96,11 @@ class SoundpoolPlugin extends SoundpoolPlatform {
 
 class _AudioContextWrapper {
   late audio.AudioContext audioContext;
+  bool _isInitialized = false;
+
   void _initContext() {
       audioContext = audio.AudioContext();
+      _isInitialized = true;
   }
 
   Map<int, _CachedAudioSettings> _cache = {};
@@ -105,7 +108,7 @@ class _AudioContextWrapper {
   int _lastPlayedStreamId = 0;
 
   Future<int> load(ByteBuffer buffer) async {
-    _initContext();
+    if(!_isInitialized) _initContext();
     audio.AudioBuffer audioBuffer = await audioContext.decodeAudioData(buffer);
     int currentSize = _cache.length;
     _cache[currentSize + 1] = _CachedAudioSettings(buffer: audioBuffer);
