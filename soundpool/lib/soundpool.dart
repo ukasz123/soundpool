@@ -387,7 +387,7 @@ class AudioStreamControl {
   /// Resumes paused stream associated with this object
   Future<void> resume() async {
     if (!_stopped && _playing) {
-      await _pool.pause(stream);
+      await _pool.resume(stream);
       _playing = true;
     }
   }
