@@ -14,7 +14,9 @@ Example:
 ```dart
     import 'package:soundpool/soundpool.dart';
 
-    Soundpool pool = Soundpool(streamType: StreamType.notification);
+    Soundpool pool = Soundpool.fromOptions(
+                      options: const SoundpoolOptions(streamType: StreamType.notification),
+                  );
 
     int soundId = await rootBundle.load("sounds/dices.m4a").then((ByteData soundData) {
                   return pool.load(soundData);
